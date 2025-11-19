@@ -24,7 +24,7 @@ model Product {
   manufacturer   String
   brandId        String?                  @db.ObjectId
   brand          Brand?                   @relation(fields: [brandId], references: [id])
-  features       String[]?
+  features       String[]
   availabilityStatus AvailabilityStatus   @default(AVAILABLE)
   deposit        Int                      @default(0)
   isOfferItem    Boolean                  @default(false)
@@ -96,6 +96,12 @@ model Category {
   products Product[] // Define a one-to-many relationship
 }
 
+model Brand {
+  id       String    @id @default(auto()) @map("_id") @db.ObjectId
+  name     String    @unique
+  products Product[]
+}
+
 model Wishlist {
   id        String  @id @default(auto()) @map("_id") @db.ObjectId
   product   Product @relation(fields: [productId], references: [id])
@@ -116,6 +122,12 @@ enum NotificationPriority {
   NORMAL
   HIGH
   URGENT
+}
+
+enum AvailabilityStatus {
+  AVAILABLE
+  UNDER_MAINTENANCE
+  UNAVAILABLE
 }
 
 model Notification {
