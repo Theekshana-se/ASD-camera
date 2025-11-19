@@ -33,9 +33,15 @@ const BrandsShowcase = async () => {
 
   return (
     <section className="bg-white border-t border-gray-100">
-      <div className="max-w-screen-2xl mx-auto py-16 px-10 max-sm:px-5">
-        <Heading title="RENT BY BRAND" />
-        <div className="mt-10 grid grid-cols-5 gap-5 max-xl:grid-cols-4 max-lg:grid-cols-3 max-sm:grid-cols-2 max-[500px]:grid-cols-1">
+      <div className="max-w-screen-2xl mx-auto py-20 px-10 max-sm:px-5">
+        <div data-reveal="up">
+          <Heading title="RENT BY BRAND" />
+        </div>
+        <div
+          data-reveal="up"
+          data-reveal-delay="150"
+          className="mt-10 grid grid-cols-5 gap-5 max-xl:grid-cols-4 max-lg:grid-cols-3 max-sm:grid-cols-2 max-[500px]:grid-cols-1"
+        >
           {brands.map((brand) => (
             <Link
               key={brand.slug}

@@ -244,10 +244,17 @@ model SiteSettings {
   heroTitle     String?
   heroSubtitle  String?
   heroImageUrl  String?
+  noticeBarText String?
+  noticeBarEnabled Boolean @default(false)
   footerSale    Json?
   footerAbout   Json?
   footerBuy     Json?
   footerHelp    Json?
+  asdCameraTitle String?
+  asdCameraDescription String?
+  asdCameraLocations Json?
+  socialLinks Json?
+  paymentMethods Json?
   updatedAt     DateTime @updatedAt
 }
 

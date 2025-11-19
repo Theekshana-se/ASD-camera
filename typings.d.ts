@@ -6,6 +6,7 @@ interface Product {
   deposit: number;
   isOfferItem: boolean;
   rating: number;
+  discount?: number;
   description: string;
   mainImage: string;
   coverPhoto?: string;

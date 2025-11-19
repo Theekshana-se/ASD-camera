@@ -16,7 +16,7 @@ import Heading from "./Heading";
 
 const CategoryMenu = () => {
   return (
-    <div className="py-16 bg-gradient-to-r from-red-700 via-red-800 to-black">
+    <div className="py-16 bg-white border-t border-gray-100">
       <Heading title="BROWSE CATEGORIES" />
       <div className="max-w-screen-2xl mx-auto py-10 px-16 max-md:px-6 grid gap-6 grid-cols-5 max-xl:grid-cols-4 max-lg:grid-cols-3 max-md:grid-cols-2 max-[450px]:grid-cols-1">
         {categoryMenuList.map((item) => (

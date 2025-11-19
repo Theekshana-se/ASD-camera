@@ -33,7 +33,7 @@ type Settings = {
 const Header = ({
   settings,
 }: {
-  settings?: { logoUrl?: string; contactPhone?: string; contactEmail?: string };
+  settings?: { logoUrl?: string; contactPhone?: string; contactEmail?: string; noticeBarText?: string; noticeBarEnabled?: boolean };
 }) => {
   const { data: session } = useSession();
   const pathname = usePathname();
@@ -109,8 +109,8 @@ const Header = ({
   return (
     <header className="bg-white/90 backdrop-blur sticky top-0 z-50">
       <HeaderTop
-        phone={settings?.contactPhone}
-        email={settings?.contactEmail}
+        noticeBarEnabled={settings?.noticeBarEnabled}
+        noticeBarText={settings?.noticeBarText}
       />
 
       {/* Normal website header */}
@@ -136,22 +136,12 @@ const Header = ({
                 className="h-12 w-auto object-contain"
               />
             </Link>
-            <nav className="hidden lg:flex flex-1 items-center justify-center gap-x-8 fade-down">
-              {navLinks.map((l) => (
-                <Link
-                  key={l.href}
-                  href={l.href}
-                  prefetch
-                  className={`group relative px-4 py-2 rounded-full text-lg md:text-xl font-semibold transition-all ${
-                    pathname === l.href
-                      ? "bg-red-600 text-white shadow"
-                      : "text-black hover:text-red-600"
-                  } after:absolute after:left-0 after:bottom-0 after:h-0.5 after:w-0 after:bg-red-600 after:transition-all hover:after:w-full`}
-                >
-                  {l.name}
-                </Link>
-              ))}
-            </nav>
+            <div className="hidden lg:flex flex-1 items-center justify-end text-black/80">
+              <div className="flex items-center gap-x-3 font-semibold">
+                <span className="flex items-center rounded-full bg-red-50 px-3 py-1 text-red-700 ring-1 ring-red-200 transition hover:scale-[1.02]">24/7 Hotline</span>
+                <span>{settings?.contactPhone || "+94 11 7253 111"}</span>
+              </div>
+            </div>
 
             <button
               className="lg:hidden p-2 rounded-full bg-red-600 text-white shadow"
@@ -161,10 +151,16 @@ const Header = ({
               <FaBars className="w-6 h-6" />
             </button>
 
-            <div className="flex gap-x-8 items-center">
+            <div className="flex gap-x-6 items-center">
               <NotificationBell />
               <HeartElement wishQuantity={wishQuantity} />
               <CartElement />
+              {!session && (
+                <div className="hidden md:flex items-center gap-x-3">
+                  <Link href="/login" prefetch className="text-sm font-semibold hover:text-red-600 transition">Login</Link>
+                  <Link href="/register" prefetch className="text-sm font-semibold hover:text-red-600 transition">Register</Link>
+                </div>
+              )}
               {(session?.user as any)?.role === "admin" && (
                 <Link
                   href="/admin"
@@ -197,9 +193,27 @@ const Header = ({
               </div>
             </div>
           )}
-          <div className="py-3 flex justify-center">
-            <div className="w-full max-w-3xl">
-              <SearchInput />
+          <div className="py-3">
+            <div className="flex items-center gap-6">
+              <nav className="hidden lg:flex items-center gap-x-3 flex-1">
+                {navLinks.map((l) => (
+                  <Link
+                    key={l.href}
+                    href={l.href}
+                    prefetch
+                    className={`px-4 py-2 rounded-full text-base font-semibold transition-all ${
+                      pathname === l.href
+                        ? "bg-red-600 text-white shadow"
+                        : "bg-white text-black hover:text-red-600 ring-1 ring-black/10"
+                    }`}
+                  >
+                    {l.name}
+                  </Link>
+                ))}
+              </nav>
+              <div className="w-full lg:w-[480px] ml-auto">
+                <SearchInput />
+              </div>
             </div>
           </div>
         </div>
@@ -223,7 +237,7 @@ const Header = ({
               width={40}
               height={40}
               unoptimized
-              className="h-10 w-auto object-contain"
+              className="h-10 w-10 object-contain"
             />
           </Link>
 

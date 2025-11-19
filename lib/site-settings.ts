@@ -1,9 +1,8 @@
 import config from "@/lib/config";
-import { unstable_cache } from "next/cache";
 
-async function fetchSettings() {
+export async function getSiteSettings() {
   const res = await fetch(`${config.apiBaseUrl}/api/settings`, {
-    next: { revalidate: 600 },
+    cache: "no-store",
   });
   try {
     const data = await res.json();
@@ -12,7 +11,3 @@ async function fetchSettings() {
     return {} as any;
   }
 }
-
-export const getSiteSettings = unstable_cache(fetchSettings, ["site-settings"], {
-  revalidate: 600,
-});

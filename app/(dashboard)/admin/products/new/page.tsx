@@ -14,6 +14,8 @@ const AddNewProduct = () => {
     price: number;
     deposit: number;
     isOfferItem: boolean;
+    discount?: number;
+    rating?: number;
     manufacturer: string;
     brandId?: string;
     features?: string[];
@@ -30,6 +32,8 @@ const AddNewProduct = () => {
     price: 0,
     deposit: 0,
     isOfferItem: false,
+    discount: 0,
+    rating: 5,
     manufacturer: "",
     brandId: "",
     features: [],
@@ -290,6 +294,42 @@ const AddNewProduct = () => {
               value={product?.price}
               onChange={(e) =>
                 setProduct({ ...product, price: Number(e.target.value) })
+              }
+            />
+          </label>
+        </div>
+        <div>
+          <label className="form-control w-full max-w-xs">
+            <div className="label">
+              <span className="label-text">Discount (%):</span>
+            </div>
+            <input
+              type="number"
+              min={0}
+              max={90}
+              step={1}
+              className="input input-bordered w-full max-w-xs"
+              value={product?.discount ?? 0}
+              onChange={(e) =>
+                setProduct({ ...product, discount: Number(e.target.value) })
+              }
+            />
+          </label>
+        </div>
+        <div>
+          <label className="form-control w-full max-w-xs">
+            <div className="label">
+              <span className="label-text">Rating (0-5):</span>
+            </div>
+            <input
+              type="number"
+              min={0}
+              max={5}
+              step={1}
+              className="input input-bordered w-full max-w-xs"
+              value={product?.rating ?? 5}
+              onChange={(e) =>
+                setProduct({ ...product, rating: Number(e.target.value) })
               }
             />
           </label>

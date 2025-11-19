@@ -9,7 +9,7 @@
 // *********************
 
 import React from "react";
-import ProductItem from "./ProductItem";
+import ProductCard from "./ProductCard";
 import Heading from "./Heading";
 import apiClient from "@/lib/api";
 
@@ -17,8 +17,8 @@ const ProductsSection = async () => {
   let products = [];
   
   try {
-    // sending API request for getting all products
-    const data = await apiClient.get("/api/products", { next: { revalidate: 30 } });
+    // sending API request for getting all products (no cache to reflect deletions immediately)
+    const data = await apiClient.get("/api/products", { cache: "no-store" });
     
     if (!data.ok) {
       console.error('Failed to fetch products:', data.statusText);
@@ -34,16 +34,16 @@ const ProductsSection = async () => {
   }
 
   return (
-    <div className="bg-red-600 border-t-4 border-white">
+    <div className="bg-white border-t border-gray-100">
       <div className="max-w-screen-2xl mx-auto pt-20">
         <Heading title="FEATURED PRODUCTS" />
         <div className="grid grid-cols-4 justify-items-center max-w-screen-2xl mx-auto py-10 gap-x-2 px-10 gap-y-8 max-xl:grid-cols-3 max-md:grid-cols-2 max-sm:grid-cols-1">
           {products.length > 0 ? (
             products.map((product: any) => (
-              <ProductItem key={product.id} product={product} color="white" />
+              <ProductCard key={product.id} product={product} />
             ))
           ) : (
-            <div className="col-span-full text-center text-white py-10">
+            <div className="col-span-full text-center text-gray-600 py-10">
               <p>No products available at the moment.</p>
             </div>
           )}

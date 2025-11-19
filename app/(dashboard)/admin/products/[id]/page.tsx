@@ -181,6 +181,61 @@ const [otherImages, setOtherImages] = useState<ImageItem[]>([]);
           </label>
         </div>
         {/* Product price input div - end */}
+        {/* Product rating input div - start */}
+        <div>
+          <label className="form-control w-full max-w-xs">
+            <div className="label">
+              <span className="label-text">Rating (0-5):</span>
+            </div>
+            <input
+              type="number"
+              min={0}
+              max={5}
+              step={1}
+              className="input input-bordered w-full max-w-xs"
+              value={product?.rating ?? 0}
+              onChange={(e) =>
+                setProduct({ ...product!, rating: Number(e.target.value) })
+              }
+            />
+          </label>
+        </div>
+        {/* Product rating input div - end */}
+        {/* Product discount input div - start */}
+        <div>
+          <label className="form-control w-full max-w-xs">
+            <div className="label">
+              <span className="label-text">Discount (%):</span>
+            </div>
+            <input
+              type="number"
+              min={0}
+              max={90}
+              step={1}
+              className="input input-bordered w-full max-w-xs"
+              value={product?.discount ?? 0}
+              onChange={(e) =>
+                setProduct({ ...product!, discount: Number(e.target.value) })
+              }
+            />
+          </label>
+        </div>
+        {/* Product discount input div - end */}
+        {/* Offer item toggle - start */}
+        <div>
+          <label className="label cursor-pointer">
+            <span className="label-text mr-3">Mark as offer item</span>
+            <input
+              type="checkbox"
+              className="checkbox"
+              checked={product?.isOfferItem ?? false}
+              onChange={(e) =>
+                setProduct({ ...product!, isOfferItem: e.target.checked })
+              }
+            />
+          </label>
+        </div>
+        {/* Offer item toggle - end */}
         {/* Product manufacturer input div - start */}
         <div>
           <label className="form-control w-full max-w-xs">
