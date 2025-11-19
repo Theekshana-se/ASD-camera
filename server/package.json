@@ -16,7 +16,8 @@
     "migrate:safe": "node scripts/migration-validator.js safe-migrate",
     "db:backup": "node scripts/backup-database.js",
     "db:restore": "node scripts/restore-database.js",
-    "seed:demo": "node scripts/seed_demo.js"
+    "seed:demo": "node scripts/seed_demo.js",
+    "postinstall": "prisma generate"
   },
   "keywords": [],
   "author": "",

@@ -110,6 +110,18 @@ model Wishlist {
   userId    String  @db.ObjectId
 }
 
+enum AvailabilityStatus {
+  AVAILABLE
+  UNDER_MAINTENANCE
+  UNAVAILABLE
+}
+
+model Brand {
+  id       String    @id @default(auto()) @map("_id") @db.ObjectId
+  name     String    @unique
+  products Product[]
+}
+
 enum NotificationType {
   ORDER_UPDATE
   PAYMENT_STATUS
