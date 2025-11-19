@@ -1,5 +1,5 @@
 import Heading from "./Heading";
-import ProductItem from "./ProductItem";
+import ProductCard from "./ProductCard";
 import apiClient from "@/lib/api";
 
 const OfferItemsSection = async () => {
@@ -27,11 +27,17 @@ const OfferItemsSection = async () => {
 
   return (
     <section className="bg-gray-50 border-y border-gray-200">
-      <div className="max-w-screen-2xl mx-auto py-16 px-10 max-sm:px-5">
-        <Heading title="LIMITED-TIME RENT OFFERS" />
-        <div className="grid grid-cols-4 justify-items-center gap-x-5 gap-y-8 mt-10 max-xl:grid-cols-3 max-md:grid-cols-2 max-sm:grid-cols-1">
+      <div className="max-w-screen-2xl mx-auto py-20 px-10 max-sm:px-5">
+        <div data-reveal="up">
+          <Heading title="LIMITED-TIME RENT OFFERS" />
+        </div>
+        <div
+          data-reveal="up"
+          data-reveal-delay="150"
+          className="grid grid-cols-4 justify-items-center gap-x-5 gap-y-8 mt-10 max-xl:grid-cols-3 max-md:grid-cols-2 max-sm:grid-cols-1"
+        >
           {offers.map((product) => (
-            <ProductItem key={product.id} product={product} color="black" />
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
       </div>

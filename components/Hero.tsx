@@ -65,7 +65,7 @@ const Hero = () => {
                 unoptimized
                 className="object-cover brightness-90 kenburns"
               />
-              <div className="absolute inset-0 bg-gradient-to-br from-red-600/50 via-black/40 to-black/70" />
+              <div className="absolute inset-0 bg-gradient-to-br from-black/25 via-black/40 to-black/70" />
             </div>
           ))}
         </Slider>
@@ -80,10 +80,10 @@ const Hero = () => {
             {subtitle}
           </p>
           <div className="flex gap-x-4 max-lg:flex-col max-lg:gap-y-3 fade-up delay-300">
-            <button className="bg-white text-red-700 font-bold px-12 py-3 rounded-lg shadow hover:shadow-lg transition-transform hover:-translate-y-0.5">
+            <button className="bg-white text-neutral-900 font-bold px-12 py-3 rounded-lg shadow hover:shadow-lg transition-transform hover:-translate-y-0.5">
               BUY NOW
             </button>
-            <button className="bg-white/80 backdrop-blur text-red-700 font-bold px-12 py-3 rounded-lg shadow hover:shadow-lg transition-transform hover:-translate-y-0.5">
+            <button className="bg-white/80 backdrop-blur text-neutral-900 font-bold px-12 py-3 rounded-lg shadow hover:shadow-lg transition-transform hover:-translate-y-0.5">
               LEARN MORE
             </button>
           </div>
