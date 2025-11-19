@@ -250,3 +250,39 @@ model SiteSettings {
   footerHelp    Json?
   updatedAt     DateTime @updatedAt
 }
+
+model SliderItem {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  title     String?
+  subtitle  String?
+  imageUrl  String
+  ctaText   String?
+  ctaHref   String?
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ClientLogo {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  imageUrl  String
+  alt       String?
+  href      String?
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Banner {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  imageUrl  String
+  title     String?
+  href      String?
+  position  String   @default("home")
+  active    Boolean  @default(true)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
