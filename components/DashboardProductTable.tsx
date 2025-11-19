@@ -16,19 +16,40 @@ import React, { useEffect, useState } from "react";
 import CustomButton from "./CustomButton";
 import apiClient from "@/lib/api";
 import { sanitize } from "@/lib/sanitize";
+import toast from "react-hot-toast";
 
 const DashboardProductTable = () => {
   const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {
-    apiClient.get("/api/products?mode=admin", {cache: "no-store"})
-      .then((res) => {
-        return res.json();
+    apiClient.get("/api/products?mode=admin", { cache: "no-store" })
+      .then(async (res) => {
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          toast.error(err?.error || "Failed to fetch products");
+          setProducts([]);
+          return;
+        }
+        const data = await res.json();
+        setProducts(Array.isArray(data) ? data : []);
       })
-      .then((data) => {
-        setProducts(data);
+      .catch(() => {
+        toast.error("Network error while fetching products");
+        setProducts([]);
       });
   }, []);
+
+  const remove = async (id: string) => {
+    const res = await apiClient.delete(`/api/products/${id}`);
+    if (res.status === 204) {
+      toast.success("Product deleted");
+      setProducts((prev) => prev.filter((p) => p.id !== id));
+    } else if (res.status === 400) {
+      toast.error("Cannot delete product due to order references");
+    } else {
+      toast.error("Failed to delete product");
+    }
+  };
 
   return (
     <div className="w-full">
@@ -110,13 +131,19 @@ const DashboardProductTable = () => {
                     
                   </td>
                   <td>${product?.price}</td>
-                  <th>
+                  <th className="space-x-2">
                     <Link
                       href={`/admin/products/${product.id}`}
                       className="btn btn-ghost btn-xs"
                     >
-                      details
+                      Edit
                     </Link>
+                    <button
+                      onClick={() => remove(product.id)}
+                      className="btn btn-error btn-outline btn-xs"
+                    >
+                      Delete
+                    </button>
                   </th>
                 </tr>
               ))}

@@ -20,6 +20,7 @@ model Product {
   mainImage      String
   price          Int                      @default(0)
   rating         Int                      @default(0)
+  discount       Int                      @default(0)
   description    String
   manufacturer   String
   brandId        String?                  @db.ObjectId

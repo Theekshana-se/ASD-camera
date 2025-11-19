@@ -20,6 +20,7 @@ const clientLogosRouter = require("./routes/clientLogos");
 const bannersRouter = require("./routes/banners");
 const messengerRouter = require("./routes/messenger");
 const orderProductRouter = require('./routes/customer_order_product');
+const paymentMethodsRouter = require("./routes/paymentMethods");
 // const wishlistRouter = require('./routes/wishlist');
 const notificationsRouter = require('./routes/notifications');
 const merchantRouter = require('./routes/merchant'); // Add this line
@@ -119,6 +120,7 @@ app.use("/api/orders", orderLimiter);
 app.use("/api/order-product", orderLimiter);
 app.use("/api/images", uploadLimiter);
 app.use("/api/main-image", uploadLimiter);
+app.use("/api/payment-methods", uploadLimiter);
 // app.use("/api/wishlist", wishlistLimiter);
 // app.use("/api/products", productLimiter);
 // app.use("/api/merchants", productLimiter);
@@ -150,6 +152,7 @@ app.use("/api/notifications", notificationsRouter);
 app.use("/api/merchants", merchantRouter); 
 app.use("/api/bulk-upload", bulkUploadRouter);
 app.use("/api/settings", settingsRouter);
+app.use("/api/payment-methods", paymentMethodsRouter);
 
 // Health check endpoint (no rate limiting)
 app.get('/health', (req, res) => {

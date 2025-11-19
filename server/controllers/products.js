@@ -282,6 +282,7 @@ const createProduct = asyncHandler(async (request, response) => {
     coverPhoto,
     price,
     deposit,
+    discount,
     description,
     manufacturer,
     brandId,
@@ -334,6 +335,7 @@ const createProduct = asyncHandler(async (request, response) => {
   const priceInt = parseInt(price);
   const depositInt = deposit == null ? 0 : parseInt(deposit);
   const inStockInt = inStock == null ? 0 : parseInt(inStock);
+  const discountInt = discount == null ? 0 : parseInt(discount);
 
   // Ensure referenced entities exist (helps avoid silent Prisma validation errors)
   const [merchantExists, categoryExists, brandExists] = await Promise.all([
@@ -360,7 +362,8 @@ const createProduct = asyncHandler(async (request, response) => {
     coverPhoto: coverPhoto || undefined,
     price: isNaN(priceInt) ? 0 : priceInt,
     deposit: isNaN(depositInt) ? 0 : depositInt,
-    rating: 5,
+    rating: typeof request.body.rating === 'number' ? request.body.rating : 5,
+    discount: isNaN(discountInt) ? 0 : discountInt,
     description,
     manufacturer,
     brandId: brandId || undefined,
@@ -395,6 +398,7 @@ const updateProduct = asyncHandler(async (request, response) => {
     price,
     deposit,
     rating,
+    discount,
     description,
     manufacturer,
     brandId,
@@ -435,6 +439,7 @@ const updateProduct = asyncHandler(async (request, response) => {
       price: price,
       deposit: deposit,
       rating: rating,
+      discount: discount,
       description: description,
       manufacturer: manufacturer,
       brandId: brandId,
