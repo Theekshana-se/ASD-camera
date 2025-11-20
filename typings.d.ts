@@ -5,6 +5,8 @@ interface Product {
   price: number;
   deposit: number;
   isOfferItem: boolean;
+  isFeatured?: boolean;
+  isHotDeal?: boolean;
   rating: number;
   discount?: number;
   description: string;

@@ -14,6 +14,8 @@ const AddNewProduct = () => {
     price: number;
     deposit: number;
     isOfferItem: boolean;
+    isFeatured: boolean;
+    isHotDeal: boolean;
     discount?: number;
     rating?: number;
     manufacturer: string;
@@ -32,6 +34,8 @@ const AddNewProduct = () => {
     price: 0,
     deposit: 0,
     isOfferItem: false,
+    isFeatured: false,
+    isHotDeal: false,
     discount: 0,
     rating: 5,
     manufacturer: "",
@@ -83,6 +87,8 @@ const AddNewProduct = () => {
           price: 0,
           deposit: 0,
           isOfferItem: false,
+          isFeatured: false,
+          isHotDeal: false,
           manufacturer: "",
           brandId: brands[0]?.id || "",
           features: [],
@@ -358,6 +364,32 @@ const AddNewProduct = () => {
               checked={product?.isOfferItem}
               onChange={(e) =>
                 setProduct({ ...product, isOfferItem: e.target.checked })
+              }
+            />
+          </label>
+        </div>
+        <div>
+          <label className="label cursor-pointer">
+            <span className="label-text mr-3">Mark as featured product</span>
+            <input
+              type="checkbox"
+              className="checkbox"
+              checked={product?.isFeatured}
+              onChange={(e) =>
+                setProduct({ ...product, isFeatured: e.target.checked })
+              }
+            />
+          </label>
+        </div>
+        <div>
+          <label className="label cursor-pointer">
+            <span className="label-text mr-3">Mark as hot deal</span>
+            <input
+              type="checkbox"
+              className="checkbox"
+              checked={product?.isHotDeal}
+              onChange={(e) =>
+                setProduct({ ...product, isHotDeal: e.target.checked })
               }
             />
           </label>

@@ -25,6 +25,7 @@ import { useWishlistStore } from "@/app/_zustand/wishlistStore";
 import apiClient from "@/lib/api";
 import { categoryMenuList } from "@/lib/utils";
 import { FaBars } from "react-icons/fa6";
+import { CategoryMegaMenu } from ".";
 
 type Settings = {
   logoUrl?: string;
@@ -40,6 +41,8 @@ const Header = ({
   const router = useRouter();
   const { setWishlist, wishQuantity } = useWishlistStore();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [hideHeader, setHideHeader] = useState(false);
+  const [lastY, setLastY] = useState(0);
 
   const handleLogout = () => {
     setTimeout(() => signOut(), 1000);
@@ -97,6 +100,18 @@ const Header = ({
     categoryMenuList.forEach((c) => router.prefetch(c.href));
   }, [router]);
 
+  useEffect(() => {
+    const onScroll = () => {
+      const y = window.scrollY || 0;
+      const goingDown = y > lastY;
+      const threshold = 50;
+      setHideHeader(goingDown && y > threshold);
+      setLastY(y);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [lastY]);
+
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "About Us", href: "/about" },
@@ -107,7 +122,7 @@ const Header = ({
   ];
 
   return (
-    <header className="bg-white/90 backdrop-blur sticky top-0 z-50">
+    <header className={`bg-white/90 backdrop-blur sticky top-0 z-50 transition-transform duration-200 ${hideHeader ? "-translate-y-full" : "translate-y-0"}`}>
       <HeaderTop
         noticeBarEnabled={settings?.noticeBarEnabled}
         noticeBarText={settings?.noticeBarText}
@@ -216,6 +231,12 @@ const Header = ({
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {pathname.startsWith("/admin") === false && (
+        <div>
+          <CategoryMegaMenu />
         </div>
       )}
 

@@ -2,9 +2,11 @@ import {
   CategoryMenu,
   Hero,
   IntroducingSection,
+  OurServicesSection,
   OfferItemsSection,
-  BrandsShowcase,
-  ProductsSection,
+  HotDealsSection,
+  FeaturedProductsSection,
+  BrandsCarousel,
 } from "@/components";
 import ScrollReveal from "@/components/ScrollReveal";
 
@@ -13,11 +15,12 @@ export default function Home() {
     <>
     <ScrollReveal />
     <Hero />
-    <CategoryMenu />
     <IntroducingSection />
+    <OurServicesSection />
+    <HotDealsSection />
+    <FeaturedProductsSection />
     <OfferItemsSection />
-    <BrandsShowcase />
-    <ProductsSection />
+    <BrandsCarousel />
     </>
   );
 }

@@ -95,3 +95,10 @@
   transform: scale(1.07) rotate(1deg);
   background: rgba(0,0,0,0.06);
 }
+
+/* Slick arrows override: ensure visible above slides and not transparent */
+.slick-prev,
+.slick-next {
+  color: inherit !important;
+  z-index: 50 !important;
+}
