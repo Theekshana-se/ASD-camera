@@ -2,6 +2,7 @@ import {
   CategoryMenu,
   Hero,
   IntroducingSection,
+  OurServicesSection,
   OfferItemsSection,
   HotDealsSection,
   FeaturedProductsSection,
@@ -15,6 +16,7 @@ export default function Home() {
     <ScrollReveal />
     <Hero />
     <IntroducingSection />
+    <OurServicesSection />
     <HotDealsSection />
     <FeaturedProductsSection />
     <OfferItemsSection />

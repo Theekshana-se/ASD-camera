@@ -44,6 +44,7 @@ export { default as BrandsShowcase } from "./BrandsShowcase";
 export { default as BrandsCarousel } from "./BrandsCarousel";
 export { default as HotDealsSection } from "./HotDealsSection";
 export { default as FeaturedProductsSection } from "./FeaturedProductsSection";
+export { default as OurServicesSection } from "./OurServicesSection";
 export { default as CategoryMegaMenu } from "./CategoryMegaMenu";
 export { default as CategoryPopoverProduct } from "./CategoryPopoverProduct";
 export { default as DashboardSidebar } from "./DashboardSidebar";

@@ -1,59 +1,122 @@
+"use client";
 import Heading from "./Heading";
 import Link from "next/link";
 import apiClient from "@/lib/api";
-import { sanitize } from "@/lib/sanitize";
+import React from "react";
+import Slider, { Settings } from "react-slick";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+import Image from "next/image";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa6";
 
-interface BrandSummary {
-  id?: string;
-  name: string;
-  slug?: string;
-  productCount?: number;
-}
+type LogoItem = {
+  id: string;
+  imageUrl: string;
+  alt?: string | null;
+  href?: string | null;
+  active: boolean;
+};
 
-const BrandsCarousel = async () => {
-  let brands: BrandSummary[] = [];
+export default function BrandsCarousel() {
+  const [items, setItems] = React.useState<LogoItem[]>([]);
 
-  try {
-    const response = await apiClient.get("/api/brands", { next: { revalidate: 120 } });
-    if (response.ok) {
-      const data = await response.json();
-      brands = Array.isArray(data) ? data.filter((b: any) => Boolean(b?.name)) : [];
-    }
-  } catch {
-    brands = [];
-  }
+  const PrevArrow = (props: any) => (
+    <button
+      aria-label="Previous"
+      onClick={props.onClick}
+      className="absolute left-3 top-1/2 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white border border-neutral-300 shadow flex items-center justify-center"
+    >
+      <FaChevronLeft className="text-black" />
+    </button>
+  );
+  const NextArrow = (props: any) => (
+    <button
+      aria-label="Next"
+      onClick={props.onClick}
+      className="absolute right-3 top-1/2 -translate-y-1/2 z-10 h-9 w-9 rounded-full bg-white border border-neutral-300 shadow flex items-center justify-center"
+    >
+      <FaChevronRight className="text-black" />
+    </button>
+  );
 
-  if (!brands.length) return null;
+  React.useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await apiClient.get("/api/client-logos");
+        const data = await res.json();
+        let arr: LogoItem[] = Array.isArray(data) ? data.filter((i: any) => i?.imageUrl) : [];
+
+        if (!arr.length) {
+          const bres = await apiClient.get("/api/brands");
+          if (bres.ok) {
+            const bdata = await bres.json();
+            arr = (Array.isArray(bdata) ? bdata : [])
+              .filter((b: any) => b?.name)
+              .slice(0, 12)
+              .map((b: any, idx: number) => ({
+                id: b.id || String(idx),
+                imageUrl: "/logo.png",
+                alt: b.name,
+                href: `/shop?brand=${encodeURIComponent(b.name)}`,
+                active: true,
+              }));
+          }
+        }
+        setItems(arr);
+      } catch {
+        setItems([]);
+      }
+    };
+    load();
+  }, []);
+
+  // Always show section; if items empty, show nothing inside slider as graceful fallback.
+
+  const settings: Settings = {
+    arrows: true,
+    dots: false,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 5,
+    slidesToScroll: 1,
+    responsive: [
+      { breakpoint: 1280, settings: { slidesToShow: 4, slidesToScroll: 1 } },
+      { breakpoint: 1024, settings: { slidesToShow: 3, slidesToScroll: 1 } },
+      { breakpoint: 640, settings: { slidesToShow: 2, slidesToScroll: 1 } },
+    ],
+    nextArrow: <NextArrow />,
+    prevArrow: <PrevArrow />,
+  };
 
   return (
-    <section className="bg-white border-t border-gray-100">
-      <div className="max-w-screen-2xl mx-auto py-20 px-10 max-sm:px-5">
-        <div data-reveal="up">
+    <section className="bg-neutral-50">
+      <div className="max-w-screen-2xl mx-auto py-16 px-6">
+        <div data-reveal="up" className="mb-8">
           <Heading title="OUR BRANDS" />
         </div>
-        <div
-          data-reveal="up"
-          data-reveal-delay="150"
-          className="mt-10 overflow-x-auto whitespace-nowrap scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
-        >
-          <div className="inline-flex gap-4">
-            {brands.map((brand) => (
-              <Link
-                key={brand.name}
-                href={`/shop?brand=${encodeURIComponent(brand.name)}`}
-                className="rounded-lg border border-gray-200 px-6 py-4 flex flex-col gap-y-1 hover:border-red-600 hover:shadow-lg transition-all duration-200 bg-white text-center min-w-[180px]"
-              >
-                <span className="text-lg font-semibold">{sanitize(brand.name)}</span>
-                {typeof brand.productCount === "number" && (
-                  <span className="text-sm text-gray-500">{brand.productCount} items</span>
-                )}
-              </Link>
+        <div className="bg-white rounded-2xl shadow border border-neutral-200 px-4 py-6 relative overflow-hidden">
+          <Slider {...settings}>
+            {items.map((it) => (
+              <div key={it.id} className="px-3">
+                <Link href={it.href || "#"} className="block group text-center">
+                  <div className="mx-auto h-20 w-full relative">
+                    <Image
+                      src={it.imageUrl}
+                      alt={it.alt || "Brand"}
+                      width={200}
+                      height={80}
+                      className="mx-auto object-contain h-20 w-auto"
+                    />
+                  </div>
+                  <div className="mt-2 text-sm font-medium text-neutral-800 group-hover:text-red-600">
+                    {it.alt || "Brand"}
+                  </div>
+                </Link>
+              </div>
             ))}
-          </div>
+          </Slider>
         </div>
       </div>
     </section>
   );
-};
-
-export default BrandsCarousel;
+}

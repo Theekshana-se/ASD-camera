@@ -249,6 +249,7 @@ model SiteSettings {
   heroImageUrl  String?
   noticeBarText String?
   noticeBarEnabled Boolean @default(false)
+  showPopupEnabled Boolean @default(true)
   footerSale    Json?
   footerAbout   Json?
   footerBuy     Json?
@@ -293,6 +294,16 @@ model Banner {
   position  String   @default("home")
   active    Boolean  @default(true)
   order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Popup {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  imageUrl  String
+  enabled   Boolean  @default(true)
+  isActive  Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
