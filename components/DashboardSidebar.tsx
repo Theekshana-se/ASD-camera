@@ -33,6 +33,7 @@ const DashboardSidebar = () => {
   const nav = [
     { label: "Dashboard", href: "/admin", icon: <MdDashboard className="text-2xl" /> },
     { label: "Images Slider", href: "/admin/images-slider", icon: <FaImages className="text-2xl" /> },
+    { label: "Pop-up Message", href: "/admin/popups", icon: <FaRectangleAd className="text-2xl" /> },
     { label: "Configurations", href: "/admin/settings", icon: <FaGear className="text-2xl" /> },
     { label: "Products", href: "/admin/products", icon: <FaTable className="text-2xl" /> },
     { label: "Categories", href: "/admin/categories", icon: <FaLayerGroup className="text-2xl" /> },

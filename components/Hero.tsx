@@ -10,7 +10,7 @@
 
 "use client";
 import Image from "next/image";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import config from "@/lib/config";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
@@ -48,13 +48,20 @@ const Hero = () => {
     fade: true,
     arrows: false,
     pauseOnHover: false,
+    pauseOnFocus: false,
     cssEase: "ease-in-out",
   } as const;
+
+  const sliderRef = useRef<Slider | null>(null);
 
   return (
     <section className="relative h-[720px] w-full max-lg:h-[900px] max-md:h-[750px] overflow-hidden">
       <div className="absolute inset-0">
-        <Slider {...sliderSettings} className="h-full">
+        <Slider
+          ref={sliderRef as any}
+          {...sliderSettings}
+          className="h-full"
+        >
           {slides.map((src, idx) => (
             <div key={idx} className="relative h-[720px] max-lg:h-[900px] max-md:h-[750px]">
               <Image
@@ -63,13 +70,35 @@ const Hero = () => {
                 fill
                 priority={idx === 0}
                 unoptimized
-                className="object-cover brightness-90 kenburns"
+                className="object-cover brightness-90"
               />
-              <div className="absolute inset-0 bg-gradient-to-br from-black/25 via-black/40 to-black/70" />
+              <div className="absolute inset-0 bg-gradient-to-br from-black/25 via-black/40 to-black/70 pointer-events-none" />
             </div>
           ))}
         </Slider>
       </div>
+
+      <button
+        type="button"
+        aria-label="Previous slide"
+        className="absolute left-4 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full bg-black/35 backdrop-blur flex items-center justify-center border border-white/50 hover:bg-black/50 transition-colors"
+        onClick={() => sliderRef.current?.slickPrev()}
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15 18l-6-6 6-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+
+      <button
+        type="button"
+        aria-label="Next slide"
+        className="absolute right-4 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full bg-black/35 backdrop-blur flex items-center justify-center border border-white/50 hover:bg-black/50 transition-colors"
+        onClick={() => sliderRef.current?.slickNext()}
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M9 6l6 6-6 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
 
       <div className="relative z-10 max-w-screen-2xl mx-auto h-full px-10 grid grid-cols-3 items-center max-lg:grid-cols-1">
         <div className="col-span-2 max-lg:order-last flex flex-col gap-y-6">

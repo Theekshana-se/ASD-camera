@@ -29,6 +29,8 @@ model Product {
   availabilityStatus AvailabilityStatus   @default(AVAILABLE)
   deposit        Int                      @default(0)
   isOfferItem    Boolean                  @default(false)
+  isFeatured     Boolean                  @default(false)
+  isHotDeal      Boolean                  @default(false)
   coverPhoto     String?
   inStock        Int                      @default(1)
   categoryId     String                   @db.ObjectId

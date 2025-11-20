@@ -236,6 +236,36 @@ const [otherImages, setOtherImages] = useState<ImageItem[]>([]);
           </label>
         </div>
         {/* Offer item toggle - end */}
+        {/* Featured product toggle - start */}
+        <div>
+          <label className="label cursor-pointer">
+            <span className="label-text mr-3">Mark as featured product</span>
+            <input
+              type="checkbox"
+              className="checkbox"
+              checked={product?.isFeatured ?? false}
+              onChange={(e) =>
+                setProduct({ ...product!, isFeatured: e.target.checked })
+              }
+            />
+          </label>
+        </div>
+        {/* Featured product toggle - end */}
+        {/* Hot deal toggle - start */}
+        <div>
+          <label className="label cursor-pointer">
+            <span className="label-text mr-3">Mark as hot deal</span>
+            <input
+              type="checkbox"
+              className="checkbox"
+              checked={product?.isHotDeal ?? false}
+              onChange={(e) =>
+                setProduct({ ...product!, isHotDeal: e.target.checked })
+              }
+            />
+          </label>
+        </div>
+        {/* Hot deal toggle - end */}
         {/* Product manufacturer input div - start */}
         <div>
           <label className="form-control w-full max-w-xs">
