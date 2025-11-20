@@ -2,7 +2,7 @@ const prisma = require("../utills/db"); // ✅ Use shared connection with SSL
 const { asyncHandler, handleServerError, AppError } = require("../utills/errorHandler");
 
 // Security: Define whitelists for allowed filter types and operators
-const ALLOWED_FILTER_TYPES = ['price', 'rating', 'category', 'inStock', 'outOfStock', 'manufacturer', 'isOfferItem'];
+const ALLOWED_FILTER_TYPES = ['price', 'rating', 'category', 'inStock', 'outOfStock', 'manufacturer', 'isOfferItem', 'isFeatured', 'isHotDeal'];
 const ALLOWED_OPERATORS = ['gte', 'lte', 'gt', 'lt', 'equals', 'contains'];
 const ALLOWED_SORT_VALUES = ['defaultSort', 'titleAsc', 'titleDesc', 'lowPrice', 'highPrice'];
 
@@ -33,6 +33,8 @@ function validateAndSanitizeFilterValue(filterType, filterValue) {
         ? filterValue.trim()
         : null;
     case 'isOfferItem':
+    case 'isFeatured':
+    case 'isHotDeal':
       if (typeof filterValue === 'string') {
         const v = filterValue.trim().toLowerCase();
         if (v === 'true') return true;
@@ -122,6 +124,10 @@ const getAllProducts = asyncHandler(async (request, response) => {
             filterType = "outOfStock";
           } else if (queryParam.includes("isOfferItem")) {
             filterType = "isOfferItem";
+          } else if (queryParam.includes("isFeatured")) {
+            filterType = "isFeatured";
+          } else if (queryParam.includes("isHotDeal")) {
+            filterType = "isHotDeal";
           } else {
             // Skip unknown filter types
             continue;
@@ -141,7 +147,7 @@ const getAllProducts = asyncHandler(async (request, response) => {
           let filterValue;
           
           // Extract filter value based on type
-          if (filterType === "category" || filterType === "manufacturer" || filterType === "isOfferItem") {
+          if (filterType === "category" || filterType === "manufacturer" || filterType === "isOfferItem" || filterType === "isFeatured" || filterType === "isHotDeal") {
             filterValue = queryParam.substring(queryParam.indexOf("=") + 1);
           } else {
             const numValue = parseInt(queryParam.substring(queryParam.indexOf("=") + 1));
@@ -291,6 +297,8 @@ const createProduct = asyncHandler(async (request, response) => {
     categoryId,
     inStock,
     isOfferItem,
+    isFeatured,
+    isHotDeal,
   } = request.body;
 
   if (!title) {
@@ -363,7 +371,6 @@ const createProduct = asyncHandler(async (request, response) => {
     price: isNaN(priceInt) ? 0 : priceInt,
     deposit: isNaN(depositInt) ? 0 : depositInt,
     rating: typeof request.body.rating === 'number' ? request.body.rating : 5,
-    discount: isNaN(discountInt) ? 0 : discountInt,
     description,
     manufacturer,
     brandId: brandId || undefined,
@@ -372,13 +379,16 @@ const createProduct = asyncHandler(async (request, response) => {
     categoryId,
     inStock: isNaN(inStockInt) ? 0 : inStockInt,
     isOfferItem: isOfferItem ?? false,
+    isFeatured: isFeatured ?? false,
+    isHotDeal: isHotDeal ?? false,
   };
 
   let product;
   try {
     product = await prisma.product.create({ data: normalizedData });
   } catch (error) {
-    if (error?.name?.includes("PrismaClientValidationError") || String(error?.message || "").includes("Invalid value")) {
+    console.error('Product create error:', { name: error?.name, message: String(error?.message || '') });
+    if (error?.name?.includes("PrismaClientValidationError") || String(error?.message || "").includes("Invalid value") || String(error?.message || "").includes("Unknown arg")) {
       throw new AppError("Invalid product data submitted", 400);
     }
     throw error; // Let global handler format other errors (e.g., unique constraints)
@@ -407,6 +417,8 @@ const updateProduct = asyncHandler(async (request, response) => {
     categoryId,
     inStock,
     isOfferItem,
+    isFeatured,
+    isHotDeal,
   } = request.body;
 
   // Basic validation
@@ -439,7 +451,6 @@ const updateProduct = asyncHandler(async (request, response) => {
       price: price,
       deposit: deposit,
       rating: rating,
-      discount: discount,
       description: description,
       manufacturer: manufacturer,
       brandId: brandId,
@@ -448,6 +459,8 @@ const updateProduct = asyncHandler(async (request, response) => {
       categoryId: categoryId,
       inStock: inStock,
       isOfferItem: isOfferItem,
+      isFeatured: isFeatured,
+      isHotDeal: isHotDeal,
     },
   });
 
