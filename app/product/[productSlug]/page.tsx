@@ -6,6 +6,7 @@ import {
 } from "@/components";
 import apiClient from "@/lib/api";
 import Image from "next/image";
+import ProductGallery from "@/components/ProductGallery";
 import { notFound } from "next/navigation";
 import React from "react";
 import { FaSquareFacebook } from "react-icons/fa6";
@@ -63,41 +64,11 @@ const SingleProductPage = async ({ params }: SingleProductPageProps) => {
   return (
     <div className="bg-white">
       <div className="max-w-screen-2xl mx-auto">
-        <div className="flex justify-center gap-x-16 pt-10 max-lg:flex-col items-center gap-y-5 px-5">
-          <div>
-            <Image
-              src={
-                product?.mainImage
-                  ? (product.mainImage.startsWith("data:") || product.mainImage.startsWith("http")
-                      ? product.mainImage
-                      : `/${product.mainImage}`)
-                  : "/product_placeholder.jpg"
-              }
-              width={500}
-              height={500}
-              alt="main image"
-              className="w-auto h-auto"
-              priority
-            />
-            <div className="flex justify-around mt-5 flex-wrap gap-y-1 max-[500px]:justify-center max-[500px]:gap-x-1">
-              {images?.map((imageItem: ImageItem, key: number) => (
-                <Image
-                  key={imageItem.imageID + key}
-                  src={
-                    imageItem.image
-                      ? (imageItem.image.startsWith("data:") || imageItem.image.startsWith("http")
-                          ? imageItem.image
-                          : `/${imageItem.image}`)
-                      : "/product_placeholder.jpg"
-                  }
-                  width={100}
-                  height={100}
-                  alt="laptop image"
-                  className="w-auto h-auto"
-                />
-              ))}
-            </div>
-          </div>
+        <div className="flex justify-center gap-x-16 pt-10 max-lg:flex-col items-start gap-y-5 px-5">
+          <ProductGallery
+            main={product?.mainImage ? (product.mainImage.startsWith('http') || product.mainImage.startsWith('/') ? product.mainImage : `/${product.mainImage}`) : '/product_placeholder.jpg'}
+            images={(Array.isArray(images) ? images : []).map((img: any) => (img?.image?.startsWith('/') || img?.image?.startsWith('http') ? img.image : `/${img?.image}`))}
+          />
           <div className="flex flex-col gap-y-7 text-black max-[500px]:text-center">
             <h1 className="text-3xl">{sanitize(product?.title)}</h1>
             <p className="text-xl font-semibold">

@@ -84,20 +84,6 @@ const Header = ({
     router.prefetch("/login");
     router.prefetch("/register");
     router.prefetch("/admin");
-    [
-      "/",
-      "/about",
-      "/blog",
-      "/clients",
-      "/promotions",
-      "/contact",
-      "/search",
-      "/wishlist",
-      "/cart",
-      "/checkout",
-    ].forEach((p) => router.prefetch(p));
-    // Prefetch category routes
-    categoryMenuList.forEach((c) => router.prefetch(c.href));
   }, [router]);
 
   useEffect(() => {
@@ -174,6 +160,11 @@ const Header = ({
                 <div className="hidden md:flex items-center gap-x-3">
                   <Link href="/login" prefetch className="text-sm font-semibold hover:text-red-600 transition">Login</Link>
                   <Link href="/register" prefetch className="text-sm font-semibold hover:text-red-600 transition">Register</Link>
+                </div>
+              )}
+              {session && (
+                <div className="hidden md:flex items-center gap-x-3">
+                  <button onClick={handleLogout} className="text-sm font-semibold hover:text-red-600 transition">Logout</button>
                 </div>
               )}
               {(session?.user as any)?.role === "admin" && (

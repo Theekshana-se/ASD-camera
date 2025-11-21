@@ -19,6 +19,7 @@ const sliderRouter = require("./routes/slider");
 const clientLogosRouter = require("./routes/clientLogos");
 const bannersRouter = require("./routes/banners");
 const messengerRouter = require("./routes/messenger");
+const statsRouter = require("./routes/stats");
 const orderProductRouter = require('./routes/customer_order_product');
 const paymentMethodsRouter = require("./routes/paymentMethods");
 const popupsRouter = require("./routes/popups");
@@ -156,6 +157,7 @@ app.use("/api/bulk-upload", bulkUploadRouter);
 app.use("/api/settings", settingsRouter);
 app.use("/api/payment-methods", paymentMethodsRouter);
 app.use("/api/popups", popupsRouter);
+app.use("/api/stats", statsRouter);
 
 // Health check endpoint (no rate limiting)
 app.get('/health', (req, res) => {

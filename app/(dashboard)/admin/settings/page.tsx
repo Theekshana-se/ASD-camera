@@ -23,6 +23,10 @@ type Settings = {
   asdCameraLocations?: { city: string; phones: string[] }[] | null;
   socialLinks?: { facebook?: string; instagram?: string; google?: string } | null;
   paymentMethods?: { name?: string; imageUrl: string }[] | null;
+  whatsappNumber?: string;
+  whatsappEnabled?: boolean;
+  messengerEnabled?: boolean;
+  adminMessengerPsid?: string;
 };
 
 const AdminSettingsPage = () => {
@@ -54,6 +58,10 @@ const AdminSettingsPage = () => {
       asdCameraLocations: Array.isArray(data?.asdCameraLocations) ? data.asdCameraLocations : [],
       socialLinks: data?.socialLinks || {},
       paymentMethods: Array.isArray(data?.paymentMethods) ? data.paymentMethods : [],
+      whatsappNumber: data?.whatsappNumber || "",
+      whatsappEnabled: Boolean(data?.whatsappEnabled) || false,
+      messengerEnabled: Boolean(data?.messengerEnabled) || false,
+      adminMessengerPsid: data?.adminMessengerPsid || "",
     });
     setLoading(false);
   };
@@ -177,16 +185,32 @@ const AdminSettingsPage = () => {
                     <input className="input input-bordered" value={settings.contactEmail || ""} onChange={(e)=>setSettings({...settings, contactEmail: e.target.value})} />
                   </label>
                 </div>
-                <div className="grid grid-cols-2 gap-4 mt-4">
-                  <label className="form-control">
-                    <span className="label-text">Top Notice Text</span>
-                    <input className="input input-bordered" value={settings.noticeBarText || ""} onChange={(e)=>setSettings({...settings, noticeBarText: e.target.value})} />
-                  </label>
-                  <label className="form-control">
-                    <span className="label-text">Enable Notice Bar</span>
-                    <input type="checkbox" className="toggle" checked={Boolean(settings.noticeBarEnabled)} onChange={(e)=>setSettings({...settings, noticeBarEnabled: e.target.checked})} />
-                  </label>
-                </div>
+        <div className="grid grid-cols-2 gap-4 mt-4">
+          <label className="form-control">
+            <span className="label-text">Top Notice Text</span>
+            <input className="input input-bordered" value={settings.noticeBarText || ""} onChange={(e)=>setSettings({...settings, noticeBarText: e.target.value})} />
+          </label>
+          <label className="form-control">
+            <span className="label-text">Enable Notice Bar</span>
+            <input type="checkbox" className="toggle" checked={Boolean(settings.noticeBarEnabled)} onChange={(e)=>setSettings({...settings, noticeBarEnabled: e.target.checked})} />
+          </label>
+        </div>
+        <div className="grid grid-cols-2 gap-4 mt-4">
+          <label className="form-control">
+            <span className="label-text">WhatsApp Number</span>
+            <input className="input input-bordered" placeholder="e.g. +94771234567" value={settings.whatsappNumber || ""} onChange={(e)=>setSettings({...settings, whatsappNumber: e.target.value})} />
+          </label>
+          <div className="grid grid-cols-2 gap-4">
+            <label className="form-control">
+              <span className="label-text">Enable WhatsApp</span>
+              <input type="checkbox" className="toggle" checked={Boolean(settings.whatsappEnabled)} onChange={(e)=>setSettings({...settings, whatsappEnabled: e.target.checked})} />
+            </label>
+            <label className="form-control">
+              <span className="label-text">Enable Messenger</span>
+              <input type="checkbox" className="toggle" checked={Boolean(settings.messengerEnabled)} onChange={(e)=>setSettings({...settings, messengerEnabled: e.target.checked})} />
+            </label>
+          </div>
+        </div>
               </div>
             </div>
 

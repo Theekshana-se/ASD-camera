@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
+import config from '@/lib/config';
 import { useNotificationStore } from '@/app/_zustand/notificationStore';
 import { notificationApi } from '@/lib/notification-api';
 import { NotificationFilters } from '@/types/notification';
@@ -212,11 +213,12 @@ export const useUnreadCount = () => {
     if (!session?.user?.email) return;
 
     try {
-      // Get user ID first
-      const userResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users/email/${session.user.email}`);
+      const base = config.apiBaseUrl;
+      const email = encodeURIComponent(session.user.email as string);
+      const userResponse = await fetch(`${base}/api/users/email/${email}`);
       const userData = await userResponse.json();
       
-      if (userData?.id) {
+      if (userResponse.ok && userData?.id) {
         const { unreadCount } = await notificationApi.getUnreadCount(userData.id);
         setUnreadCount(unreadCount);
       }

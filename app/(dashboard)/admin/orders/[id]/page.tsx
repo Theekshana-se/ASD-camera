@@ -24,6 +24,7 @@ interface OrderProduct {
     manufacturer: string;
     inStock: number;
     categoryId: string;
+    deposit: number;
   };
 }
 
@@ -44,6 +45,8 @@ const AdminSingleOrder = () => {
     country: "",
     orderNotice: "",
     status: "processing",
+    rentalDurationDays: 1,
+    fulfillmentMethod: "delivery",
     total: 0,
   });
   const params = useParams<{ id: string }>();
@@ -365,11 +368,15 @@ const AdminSingleOrder = () => {
             </div>
           ))}
           <div className="flex flex-col gap-y-2 mt-10">
-            <p className="text-2xl">Subtotal: ${order?.total}</p>
-            <p className="text-2xl">Tax 20%: ${order?.total / 5}</p>
-            <p className="text-2xl">Shipping: $5</p>
+            <p className="text-lg">Fulfillment: {order?.fulfillmentMethod || "delivery"}</p>
+            <p className="text-2xl">Rental total: ${
+              (orderProducts || []).reduce((acc, p) => acc + (p?.product?.price || 0) * (p?.quantity || 0), 0)
+            }</p>
+            <p className="text-2xl">Deposit total: ${
+              (orderProducts || []).reduce((acc, p) => acc + (p?.product?.deposit || 0) * (p?.quantity || 0), 0)
+            }</p>
             <p className="text-3xl font-semibold">
-              Total: ${order?.total + order?.total / 5 + 5}
+              Grand total: ${order?.total}
             </p>
           </div>
           <div className="flex gap-x-2 max-sm:flex-col mt-5">
@@ -381,6 +388,18 @@ const AdminSingleOrder = () => {
               Update order
             </button>
             <button
+              type="button"
+              className="uppercase bg-green-600 px-10 py-5 text-lg border border-black border-gray-300 font-bold text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2"
+              onClick={() => {
+                const summary = (orderProducts || []).map((p) => `${p.product.title} x${p.quantity}`).join("; ");
+                const txt = `Order ${order.id}: ${summary}. Total $${order.total}`;
+                navigator.clipboard.writeText(txt);
+                toast.success("Order summary copied to clipboard");
+              }}
+            >
+              Copy summary
+            </button>
+          <button
               type="button"
               className="uppercase bg-red-600 px-10 py-5 text-lg border border-black border-gray-300 font-bold text-white shadow-sm hover:bg-red-700 hover:text-white focus:outline-none focus:ring-2"
               onClick={deleteOrder}
