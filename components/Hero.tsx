@@ -12,32 +12,45 @@
 import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
 import config from "@/lib/config";
-import Slider from "react-slick";
+import dynamic from "next/dynamic";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+const Slider = dynamic(() => import("react-slick"), { ssr: false }) as any;
 
 const Hero = () => {
   const [settingsData, setSettingsData] = useState<any>({});
+  const [sliderItems, setSliderItems] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch(`${config.apiBaseUrl}/api/settings`, { cache: "no-store" })
-      .then((res) => res.json())
-      .then((d) => setSettingsData(d))
-      .catch(() => setSettingsData({}));
+    const load = async () => {
+      try {
+        const sres = await fetch(`${config.apiBaseUrl}/api/slider?active=true`, { cache: "no-store" });
+        const sdata = await sres.json();
+        setSliderItems(Array.isArray(sdata) ? sdata.filter((i: any) => i?.imageUrl) : []);
+      } catch {
+        setSliderItems([]);
+      }
+      try {
+        const res = await fetch(`${config.apiBaseUrl}/api/settings`, { cache: "no-store" });
+        const data = await res.json();
+        setSettingsData(data || {});
+      } catch {
+        setSettingsData({});
+      }
+    };
+    load();
   }, []);
 
-  const title = settingsData?.heroTitle || "THE PRODUCT OF THE FUTURE";
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const currentItem = sliderItems[currentIdx] || null;
+  const title = currentItem?.title || settingsData?.heroTitle || "THE PRODUCT OF THE FUTURE";
   const subtitle =
-    settingsData?.heroSubtitle ||
+    currentItem?.subtitle || settingsData?.heroSubtitle ||
     "Discover premium gear for rent — cameras, laptops, TVs and more.";
 
-  const slides = [
-    "/pexels-format-1029757.jpg",
-    "/pexels-lex-photography-1109543.jpg",
-    "/tv.jpg",
-    "/camera 1.png",
-    "/laptop 4.webp",
-  ];
+  const slides = sliderItems.length
+    ? sliderItems.map((i) => i.imageUrl)
+    : [settingsData?.heroImageUrl || "/pexels-format-1029757.jpg"];
 
   const sliderSettings = {
     dots: true,
@@ -50,9 +63,10 @@ const Hero = () => {
     pauseOnHover: false,
     pauseOnFocus: false,
     cssEase: "ease-in-out",
+    afterChange: (i: number) => setCurrentIdx(i),
   } as const;
 
-  const sliderRef = useRef<Slider | null>(null);
+  const sliderRef = useRef<any | null>(null);
 
   return (
     <section className="relative h-[720px] w-full max-lg:h-[900px] max-md:h-[750px] overflow-hidden">
@@ -69,7 +83,7 @@ const Hero = () => {
                 alt="hero slide"
                 fill
                 priority={idx === 0}
-                unoptimized
+                sizes="100vw"
                 className="object-cover brightness-90"
               />
               <div className="absolute inset-0 bg-gradient-to-br from-black/25 via-black/40 to-black/70 pointer-events-none" />
@@ -99,9 +113,8 @@ const Hero = () => {
           <path d="M9 6l6 6-6 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </button>
-
       <div className="relative z-10 max-w-screen-2xl mx-auto h-full px-10 grid grid-cols-3 items-center max-lg:grid-cols-1">
-        <div className="col-span-2 max-lg:order-last flex flex-col gap-y-6">
+        <div className="col-span-2 max-lg:order-last flex flex-col gap-y-6 lg:pl-20">
           <h1 className="text-6xl text-white font-extrabold max-xl:text-5xl max-md:text-4xl max-sm:text-3xl fade-up">
             {title}
           </h1>
@@ -109,12 +122,15 @@ const Hero = () => {
             {subtitle}
           </p>
           <div className="flex gap-x-4 max-lg:flex-col max-lg:gap-y-3 fade-up delay-300">
-            <button className="bg-white text-neutral-900 font-bold px-12 py-3 rounded-lg shadow hover:shadow-lg transition-transform hover:-translate-y-0.5">
-              BUY NOW
-            </button>
-            <button className="bg-white/80 backdrop-blur text-neutral-900 font-bold px-12 py-3 rounded-lg shadow hover:shadow-lg transition-transform hover:-translate-y-0.5">
-              LEARN MORE
-            </button>
+            {currentItem?.ctaHref ? (
+              <a href={currentItem?.ctaHref} className="bg-white text-neutral-900 font-bold px-12 py-3 rounded-lg shadow hover:shadow-lg transition-transform hover:-translate-y-0.5">
+                {currentItem?.ctaText || "Learn More"}
+              </a>
+            ) : (
+              <button className="bg-white text-neutral-900 font-bold px-12 py-3 rounded-lg shadow hover:shadow-lg transition-transform hover:-translate-y-0.5">
+                Shop Now
+              </button>
+            )}
           </div>
         </div>
       </div>

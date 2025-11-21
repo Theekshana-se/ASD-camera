@@ -109,6 +109,7 @@ model Category {
 model Brand {
   id       String    @id @default(auto()) @map("_id") @db.ObjectId
   name     String    @unique
+  imageUrl String?
   products Product[]
 }
 
@@ -259,6 +260,10 @@ model SiteSettings {
   asdCameraLocations Json?
   socialLinks Json?
   paymentMethods Json?
+  whatsappNumber String?
+  whatsappEnabled Boolean @default(false)
+  messengerEnabled Boolean @default(false)
+  adminMessengerPsid String?
   updatedAt     DateTime @updatedAt
 }
 

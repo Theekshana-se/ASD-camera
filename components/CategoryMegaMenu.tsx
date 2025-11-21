@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import apiClient from "@/lib/api";
 import CategoryPopoverProduct from "./CategoryPopoverProduct";
+import Link from "next/link";
 
 type Cat = { id: string; name: string };
 
@@ -13,23 +14,28 @@ const CategoryMegaMenu: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const hoverTimeout = useRef<NodeJS.Timeout | null>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const [startIdx, setStartIdx] = useState(0);
+
+  const navCats = useMemo(() => (
+    [
+      { id: "smart-phones", name: "smart-phones", href: "/shop/smart-phones" },
+      { id: "cameras", name: "cameras", href: "/shop/cameras" },
+      { id: "earbuds", name: "earbuds", href: "/shop/earbuds" },
+      { id: "speakers", name: "speakers", href: "/shop/speakers" },
+      { id: "juicers", name: "juicers", href: "/shop/juicers" },
+      { id: "headphones", name: "headphones", href: "/shop/headphones" },
+      { id: "watches", name: "watches", href: "/shop/watches" },
+      { id: "laptops", name: "laptops", href: "/shop/laptops" },
+      { id: "tea", name: "tea", href: "/shop/tea" },
+      { id: "lighters", name: "lighters", href: "/shop/lighters" },
+    ]
+  ), []);
 
   useEffect(() => {
-    let mounted = true;
-    apiClient
-      .get("/api/categories", { cache: "no-store" })
-      .then((res) => res.json())
-      .then((data) => {
-        if (!mounted) return;
-        const list: Cat[] = Array.isArray(data) ? data : data?.categories || [];
-        setCategories(list);
-        if (list[0]?.name) setActive(list[0].name);
-      })
-      .catch(() => setCategories([]));
-    return () => {
-      mounted = false;
-    };
-  }, []);
+    setCategories(navCats.map((c) => ({ id: c.id, name: c.name })));
+    setActive(navCats[0]?.name || null);
+  }, [navCats]);
 
   const fetchProducts = (categoryName: string) => {
     if (abortRef.current) abortRef.current.abort();
@@ -62,24 +68,39 @@ const CategoryMegaMenu: React.FC = () => {
     hoverTimeout.current = setTimeout(() => setOpen(false), 150);
   };
 
+  const maxStart = Math.max(0, navCats.length - 6);
+  const scrollLeft = () => setStartIdx((s) => Math.max(0, s - 1));
+  const scrollRight = () => setStartIdx((s) => Math.min(maxStart, s + 1));
+
   const bar = useMemo(() => (
-    <div className="flex gap-2 overflow-x-auto whitespace-nowrap py-2 px-0 bg-red-600">
-      {categories.map((c) => (
-        <button
-          key={c.id}
-          onMouseEnter={() => handleEnter(c.name)}
-          onFocus={() => handleEnter(c.name)}
-          className={`px-4 py-2 text-sm font-semibold transition-all ${
-            active === c.name
-              ? "bg-red-800 text-white rounded-full shadow"
-              : "bg-transparent text-white hover:bg-red-700 hover:rounded-full"
-          }`}
-        >
-          {c.name}
-        </button>
-      ))}
+    <div className="relative bg-red-600 py-2">
+      <div className="absolute left-4 top-1/2 -translate-y-1/2 flex gap-2">
+        <button aria-label="Scroll left" onClick={scrollLeft} className="w-7 h-7 rounded-full bg-white text-black text-xs font-bold">‹</button>
+      </div>
+      <div className="absolute right-4 top-1/2 -translate-y-1/2 flex gap-2">
+        <button aria-label="Scroll right" onClick={scrollRight} className="w-7 h-7 rounded-full bg-white text-black text-xs font-bold">›</button>
+      </div>
+      <div ref={scrollRef} className="mx-20 flex gap-3 overflow-x-hidden whitespace-nowrap justify-center">
+        {navCats.slice(startIdx, startIdx + 6).map((c) => (
+          <Link
+            key={c.id}
+            href={c.href}
+            prefetch
+            onMouseEnter={() => handleEnter(c.name)}
+            onFocus={() => handleEnter(c.name)}
+            className={`group relative inline-flex items-center rounded-full px-5 py-2 font-semibold overflow-hidden transition-colors ${
+              active === c.name ? "bg-white text-black" : "bg-black text-white"
+            }`}
+          >
+            <span className="relative z-10">{c.name}</span>
+            {active !== c.name && (
+              <span className="absolute left-0 top-0 h-full w-0 bg-white/20 z-0 transition-all duration-300 group-hover:w-full" />
+            )}
+          </Link>
+        ))}
+      </div>
     </div>
-  ), [categories, active]);
+  ), [navCats, startIdx, active]);
 
   return (
     <div className="relative" onMouseLeave={handleLeave}>

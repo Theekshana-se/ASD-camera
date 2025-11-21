@@ -5,6 +5,7 @@ import { getServerSession } from "next-auth/next";
 import 'svgmap/dist/svgMap.min.css';
 import SessionProvider from "@/utils/SessionProvider";
 import Header from "@/components/Header";
+import WhatsAppButton from "@/components/WhatsAppButton";
 import Footer from "@/components/Footer";
 import { getSiteSettings } from "@/lib/site-settings";
 import Providers from "@/Providers";
@@ -34,6 +35,9 @@ export default async function RootLayout({
             {children}
           </Providers>
           <Footer settings={settings} />
+          {settings?.whatsappEnabled && settings?.whatsappNumber && (
+            <WhatsAppButton number={settings.whatsappNumber} />
+          )}
         </SessionProvider>
       </body>
     </html>

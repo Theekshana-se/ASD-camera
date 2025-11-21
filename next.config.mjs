@@ -1,12 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     images: {
+        formats: ['image/avif','image/webp'],
         remotePatterns: [
-          {
-            protocol: 'https',
-            hostname: 'placehold.co',
-            port: ""
-          },
+          { protocol: 'https', hostname: 'placehold.co' },
+          { protocol: 'http', hostname: 'localhost', port: '3001' },
+          { protocol: 'https', hostname: 'localhost', port: '3001' },
+          { protocol: 'http', hostname: '127.0.0.1', port: '3001' },
         ],
       },
     env: {

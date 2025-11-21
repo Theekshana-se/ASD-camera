@@ -326,8 +326,8 @@ const Filters = () => {
           }
         >
           <option value="all">All brands</option>
-          {brands.map((brand) => (
-            <option key={brand.slug} value={brand.name}>
+          {brands.map((brand, idx) => (
+            <option key={`${brand.name}-${idx}`} value={brand.name}>
               {brand.name} {brand.productCount ? `(${brand.productCount})` : ""}
             </option>
           ))}

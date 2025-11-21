@@ -3,9 +3,10 @@ import Heading from "./Heading";
 import Link from "next/link";
 import apiClient from "@/lib/api";
 import React from "react";
-import Slider, { Settings } from "react-slick";
+import dynamic from "next/dynamic";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+const Slider = dynamic(() => import("react-slick"), { ssr: false }) as any;
 import Image from "next/image";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa6";
 
@@ -42,25 +43,26 @@ export default function BrandsCarousel() {
   React.useEffect(() => {
     const load = async () => {
       try {
-        const res = await apiClient.get("/api/client-logos");
-        const data = await res.json();
-        let arr: LogoItem[] = Array.isArray(data) ? data.filter((i: any) => i?.imageUrl) : [];
-
-        if (!arr.length) {
-          const bres = await apiClient.get("/api/brands");
-          if (bres.ok) {
-            const bdata = await bres.json();
-            arr = (Array.isArray(bdata) ? bdata : [])
-              .filter((b: any) => b?.name)
-              .slice(0, 12)
-              .map((b: any, idx: number) => ({
-                id: b.id || String(idx),
-                imageUrl: "/logo.png",
-                alt: b.name,
-                href: `/shop?brand=${encodeURIComponent(b.name)}`,
-                active: true,
-              }));
-          }
+        const bres = await apiClient.get("/api/brands");
+        let arr: LogoItem[] = [];
+        if (bres.ok) {
+          const bdata = await bres.json();
+          arr = (Array.isArray(bdata) ? bdata : [])
+            .filter((b: any) => b?.name)
+            .slice(0, 12)
+            .map((b: any, idx: number) => ({
+              id: b.id || String(idx),
+              imageUrl: b.imageUrl || "/logo.png",
+              alt: b.name,
+              href: `/shop?brand=${encodeURIComponent(b.name)}`,
+              active: true,
+            }));
+        }
+        if (!arr.length || arr.every((i) => !i.imageUrl || i.imageUrl === "/logo.png")) {
+          const res = await apiClient.get("/api/client-logos");
+          const data = await res.json();
+          const logos: LogoItem[] = Array.isArray(data) ? data.filter((i: any) => i?.imageUrl) : [];
+          arr = logos.length ? logos : arr;
         }
         setItems(arr);
       } catch {
@@ -72,7 +74,7 @@ export default function BrandsCarousel() {
 
   // Always show section; if items empty, show nothing inside slider as graceful fallback.
 
-  const settings: Settings = {
+  const settings = {
     arrows: true,
     dots: false,
     infinite: true,
@@ -86,7 +88,7 @@ export default function BrandsCarousel() {
     ],
     nextArrow: <NextArrow />,
     prevArrow: <PrevArrow />,
-  };
+  } as const;
 
   return (
     <section className="bg-neutral-50">
