@@ -1,10 +1,17 @@
 const prisma = require("../utills/db");
 const { asyncHandler, AppError } = require("../utills/errorHandler");
+const path = require("path");
+const fs = require("fs");
 
 const listSliderItems = asyncHandler(async (req, res) => {
-  const items = await prisma.sliderItem.findMany({ orderBy: { order: "asc" } });
+  const onlyActive = String(req.query.active || "").toLowerCase() === "true";
+  const items = await prisma.sliderItem.findMany({ where: onlyActive ? { active: true } : {}, orderBy: { order: "asc" } });
   res.json(items);
 });
+
+function isSafeUrl(u) {
+  return typeof u === "string" && /^https:\/\//i.test(u);
+}
 
 const createSliderItem = asyncHandler(async (req, res) => {
   const { title, subtitle, imageUrl, ctaText, ctaHref, order, active } = req.body || {};
@@ -15,7 +22,7 @@ const createSliderItem = asyncHandler(async (req, res) => {
       subtitle: subtitle || null,
       imageUrl,
       ctaText: ctaText || null,
-      ctaHref: ctaHref || null,
+      ctaHref: ctaHref && isSafeUrl(ctaHref) ? ctaHref : null,
       order: Number(order) || 0,
       active: active !== undefined ? !!active : true,
     },
@@ -34,7 +41,7 @@ const updateSliderItem = asyncHandler(async (req, res) => {
       subtitle: subtitle ?? undefined,
       imageUrl: imageUrl ?? undefined,
       ctaText: ctaText ?? undefined,
-      ctaHref: ctaHref ?? undefined,
+      ctaHref: ctaHref === undefined ? undefined : (ctaHref && isSafeUrl(ctaHref) ? ctaHref : null),
       order: order !== undefined ? Number(order) : undefined,
       active: active !== undefined ? !!active : undefined,
     },
@@ -49,4 +56,28 @@ const deleteSliderItem = asyncHandler(async (req, res) => {
   res.status(204).send();
 });
 
-module.exports = { listSliderItems, createSliderItem, updateSliderItem, deleteSliderItem };
+function ensureDir(dir) {
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+}
+
+function isAllowedMime(m) {
+  return ["image/jpeg", "image/png", "image/webp"].includes(String(m).toLowerCase());
+}
+
+const uploadSliderImage = asyncHandler(async (req, res) => {
+  const file = req.files?.file || req.files?.files || null;
+  if (!file) return res.status(400).json({ error: "No file uploaded" });
+  const f = Array.isArray(file) ? file[0] : file;
+  if (!isAllowedMime(f.mimetype) || f.size > 5 * 1024 * 1024) {
+    return res.status(400).json({ error: "Invalid image. Allowed: jpeg, png, webp; max 5MB" });
+  }
+  const targetDir = path.join(__dirname, "..", "..", "public", "slider");
+  ensureDir(targetDir);
+  const safeName = Date.now() + "-" + String(f.name || "slide.jpg").replace(/[^a-zA-Z0-9._-]/g, "_");
+  const dest = path.join(targetDir, safeName);
+  await f.mv(dest);
+  const url = `/slider/${safeName}`;
+  res.status(200).json({ url });
+});
+
+module.exports = { listSliderItems, createSliderItem, updateSliderItem, deleteSliderItem, uploadSliderImage };

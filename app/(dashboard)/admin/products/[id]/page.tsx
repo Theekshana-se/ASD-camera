@@ -424,18 +424,46 @@ const [otherImages, setOtherImages] = useState<ImageItem[]>([]);
         </div>
         {/* Main image file upload div - end */}
         {/* Other images file upload div - start */}
-        <div className="flex gap-x-1">
-          {otherImages &&
-            otherImages.map((image) => (
-              <Image
-                src={`/${image.image}`}
-                key={nanoid()}
-                alt="product image"
-                width={100}
-                height={100}
-                className="w-auto h-auto"
-              />
+        <div className="mt-4">
+          <label className="form-control w-full max-w-sm">
+            <span className="label-text">Upload additional images</span>
+            <input
+              type="file"
+              multiple
+              className="file-input file-input-bordered w-full"
+              onChange={async (e) => {
+                const files = e.target.files;
+                if (!files || files.length === 0) return;
+                const formData = new FormData();
+                Array.from(files).forEach((f) => formData.append('file', f));
+                const res = await fetch(`${apiClient.baseUrl}/api/product-images/upload?productId=${id}`, { method: 'POST', body: formData });
+                const data = await res.json();
+                if (res.ok) {
+                  toast.success('Images uploaded');
+                  fetchProductData();
+                } else {
+                  toast.error(String(data?.error || 'Upload failed'));
+                }
+              }}
+            />
+          </label>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {otherImages && otherImages.map((image) => (
+              <div key={image.imageID} className="border rounded p-2 flex flex-col items-center gap-2">
+                <Image src={`/${image.image}`} alt="product image" width={100} height={100} className="w-auto h-auto" />
+                <div className="flex gap-2">
+                  <button className="btn btn-sm" onClick={async ()=>{
+                    const res = await fetch(`${apiClient.baseUrl}/api/product-images/main/${image.imageID}`, { method: 'PUT' });
+                    if (res.ok) { toast.success('Set as main'); fetchProductData(); } else { toast.error('Failed'); }
+                  }}>Set main</button>
+                  <button className="btn btn-sm btn-outline btn-error" onClick={async ()=>{
+                    const res = await fetch(`${apiClient.baseUrl}/api/product-images/image/${image.imageID}`, { method: 'DELETE' });
+                    if (res.status === 204) { toast.success('Deleted'); fetchProductData(); } else { toast.error('Delete failed'); }
+                  }}>Delete</button>
+                </div>
+              </div>
             ))}
+          </div>
         </div>
         {/* Other images file upload div - end */}
         {/* Product description div - start */}

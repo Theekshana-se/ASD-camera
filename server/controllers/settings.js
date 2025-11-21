@@ -44,6 +44,10 @@ const upsertSettings = asyncHandler(async (req, res) => {
     asdCameraLocations,
     socialLinks,
     paymentMethods,
+    whatsappNumber,
+    whatsappEnabled,
+    messengerEnabled,
+    adminMessengerPsid,
   } = req.body || {};
 
   const data = {
@@ -65,6 +69,10 @@ const upsertSettings = asyncHandler(async (req, res) => {
     asdCameraLocations: Array.isArray(asdCameraLocations) || (asdCameraLocations && typeof asdCameraLocations === 'object') ? asdCameraLocations : null,
     socialLinks: socialLinks && typeof socialLinks === 'object' ? socialLinks : null,
     paymentMethods: Array.isArray(paymentMethods) ? paymentMethods.map((p)=>({ name: String(p?.name || ''), imageUrl: String(p?.imageUrl || '') })) : null,
+    whatsappNumber: whatsappNumber || null,
+    whatsappEnabled: whatsappEnabled !== undefined ? !!whatsappEnabled : false,
+    messengerEnabled: messengerEnabled !== undefined ? !!messengerEnabled : false,
+    adminMessengerPsid: adminMessengerPsid || null,
   };
 
   const existing = await prisma.siteSettings.findFirst({});
@@ -98,6 +106,10 @@ const upsertSettings = asyncHandler(async (req, res) => {
         asdCameraLocations: data.asdCameraLocations,
         socialLinks: data.socialLinks,
         paymentMethods: data.paymentMethods,
+        whatsappNumber: data.whatsappNumber,
+        whatsappEnabled: data.whatsappEnabled,
+        messengerEnabled: data.messengerEnabled,
+        adminMessengerPsid: data.adminMessengerPsid,
       },
     };
     await prisma.$runCommandRaw({
@@ -137,6 +149,10 @@ const upsertSettings = asyncHandler(async (req, res) => {
         asdCameraLocations: data.asdCameraLocations,
         socialLinks: data.socialLinks,
         paymentMethods: data.paymentMethods,
+        whatsappNumber: data.whatsappNumber,
+        whatsappEnabled: data.whatsappEnabled,
+        messengerEnabled: data.messengerEnabled,
+        adminMessengerPsid: data.adminMessengerPsid,
       },
     };
     await prisma.$runCommandRaw({

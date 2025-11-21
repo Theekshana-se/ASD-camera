@@ -27,7 +27,7 @@ const Products = async ({
     typeof searchParams?.sort === "string" && searchParams.sort.length > 0
       ? searchParams.sort
       : "defaultSort";
-  const priceLimit = Number(searchParams?.price) || 3000;
+  const priceLimit = Number(searchParams?.price) || 999999;
   const ratingThreshold = Number(searchParams?.rating) || 0;
   const brandFilterParam =
     typeof searchParams?.brand === "string" &&
@@ -53,24 +53,18 @@ const Products = async ({
     ? undefined
     : categoryFromParams || slugCategory;
 
-  let stockMode: string = "lte";
+  let stockMode: string | null = null;
   
   // preparing inStock and out of stock filter for GET request
   // If in stock checkbox is checked, stockMode is "equals"
-  if (inStockNum === 1) {
-    stockMode = "equals";
-  }
- // If out of stock checkbox is checked, stockMode is "lt"
-  if (outOfStockNum === 1) {
-    stockMode = "lt";
-  }
-   // If in stock and out of stock checkboxes are checked, stockMode is "lte"
   if (inStockNum === 1 && outOfStockNum === 1) {
-    stockMode = "lte";
-  }
-   // If in stock and out of stock checkboxes aren't checked, stockMode is "gt"
-  if (inStockNum === 0 && outOfStockNum === 0) {
-    stockMode = "gt";
+    stockMode = "lte"; // both checked → include any positive stock
+  } else if (inStockNum === 1) {
+    stockMode = "equals"; // exactly in stock
+  } else if (outOfStockNum === 1) {
+    stockMode = "lt"; // less than 1
+  } else {
+    stockMode = null; // no stock filter by default
   }
 
   let products = [];
@@ -80,8 +74,10 @@ const Products = async ({
     const queryParts: string[] = [
       `filters[price][$lte]=${priceLimit}`,
       `filters[rating][$gte]=${ratingThreshold}`,
-      `filters[inStock][$${stockMode}]=1`,
     ];
+    if (stockMode) {
+      queryParts.push(`filters[inStock][$${stockMode}]=1`);
+    }
 
     if (activeCategory) {
       queryParts.push(

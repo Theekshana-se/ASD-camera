@@ -52,6 +52,10 @@ const AddNewProduct = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [merchants, setMerchants] = useState<Merchant[]>([]);
   const [brands, setBrands] = useState<{id: string; name: string}[]>([]);
+  const [createdProductId, setCreatedProductId] = useState<string | null>(null);
+  const [uploadedImages, setUploadedImages] = useState<{ imageID: string; image: string }[]>([]);
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [mainIdx, setMainIdx] = useState<number | null>(null);
   const addProduct = async () => {
     if (
       !product.merchantId ||
@@ -74,13 +78,21 @@ const AddNewProduct = () => {
 
       console.log("Sending product data:", sanitizedProduct);
 
-      // Correct usage of apiClient.post
+      // If no explicit main image set, use first pending file as main
+      if (!payload.mainImage && pendingFiles[0]) {
+        try {
+          payload.mainImage = await fileToBase64(pendingFiles[0]);
+          setMainIdx(0);
+        } catch {}
+      }
+
       const response = await apiClient.post(`/api/products`, payload);
 
       if (response.status === 201) {
         const data = await response.json();
         console.log("Product created successfully:", data);
         toast.success("Product added successfully");
+        setCreatedProductId(data?.id || null);
         setProduct({
           merchantId: "",
           title: "",
@@ -100,6 +112,11 @@ const AddNewProduct = () => {
           slug: "",
           categoryId: categories[0]?.id || "",
         });
+        if (data?.id) {
+          const imgsRes = await apiClient.get(`/api/images/${data.id}`, { cache: 'no-store' });
+          const imgs = await imgsRes.json();
+          setUploadedImages(Array.isArray(imgs) ? imgs : []);
+        }
       } else {
         const errorData = await response.json();
         console.error("Failed to create product:", errorData);
@@ -179,6 +196,38 @@ const AddNewProduct = () => {
     fetchMerchants();
     fetchBrands();
   }, []);
+
+  const uploadAdditionalImages = async (files: FileList | null) => {
+    if (!files || files.length === 0 || !createdProductId) return;
+    const formData = new FormData();
+    Array.from(files).forEach((f) => formData.append('file', f));
+    const res = await fetch(`${apiClient.baseUrl}/api/product-images/upload?productId=${createdProductId}`, { method: 'POST', body: formData });
+    const data = await res.json();
+    if (res.ok) {
+      toast.success('Images uploaded');
+      const imgsRes = await apiClient.get(`/api/images/${createdProductId}`, { cache: 'no-store' });
+      const imgs = await imgsRes.json();
+      setUploadedImages(Array.isArray(imgs) ? imgs : []);
+    } else {
+      toast.error(String(data?.error || 'Upload failed'));
+    }
+  };
+
+  const uploadAdditionalImagesFromArray = async (files: File[]) => {
+    if (!files || files.length === 0 || !createdProductId) return;
+    const formData = new FormData();
+    files.forEach((f) => formData.append('file', f));
+    const res = await fetch(`${apiClient.baseUrl}/api/product-images/upload?productId=${createdProductId}`, { method: 'POST', body: formData });
+    const data = await res.json();
+    if (res.ok) {
+      const imgsRes = await apiClient.get(`/api/images/${createdProductId}`, { cache: 'no-store' });
+      const imgs = await imgsRes.json();
+      setUploadedImages(Array.isArray(imgs) ? imgs : []);
+      setPendingFiles([]);
+    } else {
+      toast.error(String(data?.error || 'Upload failed'));
+    }
+  };
 
   return (
     <div className="bg-white flex justify-start max-w-screen-2xl mx-auto xl:h-full max-xl:flex-col max-xl:gap-y-5">
@@ -529,6 +578,67 @@ const AddNewProduct = () => {
             Add product
           </button>
         </div>
+
+        {/* Drag & Drop Images (pre-create collection) */}
+        <div className="mt-8">
+          <h2 className="text-2xl font-semibold">Add product images (drag & drop)</h2>
+          <div
+            className="mt-3 border-dashed border-2 border-gray-300 rounded-lg p-6 text-center bg-gray-50"
+            onDragOver={(e)=>{e.preventDefault();}}
+            onDrop={async (e)=>{
+              e.preventDefault();
+              const files = Array.from(e.dataTransfer.files || []).filter((f)=>f.type.startsWith('image/'));
+              if (files.length) {
+                setPendingFiles((prev)=>[...prev, ...files]);
+                if (mainIdx === null) setMainIdx(0);
+              }
+            }}
+          >
+            <p className="mb-3">Drag and drop images here or select files</p>
+            <input type="file" multiple accept="image/*" className="file-input file-input-bordered" onChange={(e)=>{
+              const files = e.target.files ? Array.from(e.target.files) : [];
+              if (files.length) {
+                setPendingFiles((prev)=>[...prev, ...files]);
+                if (mainIdx === null) setMainIdx(0);
+              }
+            }} />
+          </div>
+          {pendingFiles.length > 0 && (
+            <div className="mt-4 flex flex-wrap gap-3">
+              {pendingFiles.map((f, i)=> (
+                <div key={`${f.name}-${i}`} className={`border rounded p-2 ${i===mainIdx?'ring-2 ring-red-600':''}`}>
+                  <Image src={URL.createObjectURL(f)} alt="pending" width={100} height={100} className="w-auto h-auto" />
+                  <div className="mt-2 flex gap-2">
+                    <button className="btn btn-sm" onClick={()=>setMainIdx(i)}>Set main</button>
+                    <button className="btn btn-sm btn-outline btn-error" onClick={()=>{
+                      setPendingFiles((prev)=> prev.filter((_,idx)=> idx!==i));
+                      if (mainIdx === i) setMainIdx(null);
+                    }}>Remove</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {createdProductId && (
+          <div className="mt-8">
+            <h2 className="text-2xl font-semibold">Upload product images</h2>
+            <input type="file" multiple accept="image/*" className="file-input file-input-bordered w-full max-w-md mt-3" onChange={(e)=>uploadAdditionalImages(e.target.files)} />
+            {pendingFiles.length > 0 && (
+              <div className="mt-3">
+                <button className="btn btn-primary" onClick={()=>uploadAdditionalImagesFromArray(pendingFiles)}>Upload pending images</button>
+              </div>
+            )}
+            <div className="mt-4 flex flex-wrap gap-3">
+              {uploadedImages.map((img) => (
+                <div key={img.imageID} className="border rounded p-2">
+                  <Image src={`/${img.image}`} alt="product" width={100} height={100} className="w-auto h-auto" />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

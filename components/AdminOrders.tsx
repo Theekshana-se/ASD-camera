@@ -43,6 +43,7 @@ const AdminOrders = () => {
               <th>Order ID</th>
               <th>Name and country</th>
               <th>Status</th>
+              <th>Method</th>
               <th>Subtotal</th>
               <th>Date</th>
               <th></th>
@@ -77,6 +78,11 @@ const AdminOrders = () => {
                   <td>
                     <span className="badge badge-success text-white badge-sm">
                       {order?.status}
+                    </span>
+                  </td>
+                  <td>
+                    <span className="badge badge-ghost badge-sm">
+                      {order?.fulfillmentMethod || "delivery"}
                     </span>
                   </td>
 

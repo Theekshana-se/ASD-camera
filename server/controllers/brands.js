@@ -10,22 +10,26 @@ const getBrands = asyncHandler(async (request, response) => {
   }
 });
 
+function isSafeUrl(u) {
+  return typeof u === "string" && /^https:\/\//i.test(u);
+}
+
 const createBrand = asyncHandler(async (request, response) => {
-  const { name } = request.body;
+  const { name, imageUrl } = request.body;
   if (!name || !name.trim()) {
     throw new AppError("Brand name is required", 400);
   }
-  const brand = await prisma.brand.create({ data: { name: name.trim() } });
+  const brand = await prisma.brand.create({ data: { name: name.trim(), imageUrl: imageUrl && isSafeUrl(imageUrl) ? imageUrl : null } });
   response.status(201).json(brand);
 });
 
 const updateBrand = asyncHandler(async (request, response) => {
   const { id } = request.params;
-  const { name } = request.body;
+  const { name, imageUrl } = request.body;
   if (!id) throw new AppError("Brand ID is required", 400);
   const brand = await prisma.brand.update({
     where: { id },
-    data: { name: name?.trim() || undefined },
+    data: { name: name?.trim() || undefined, imageUrl: imageUrl === undefined ? undefined : (imageUrl && isSafeUrl(imageUrl) ? imageUrl : null) },
   });
   response.json(brand);
 });

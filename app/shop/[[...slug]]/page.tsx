@@ -1,5 +1,4 @@
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 60;
 
 import {
   Breadcrumb,
@@ -29,7 +28,7 @@ const ShopPage = async ({ params, searchParams }: { params: Promise<{ slug?: str
   
   return (
     <div className="text-black bg-white">
-      <div className=" max-w-screen-2xl mx-auto px-10 max-sm:px-5">
+      <div className=" max-w-screen-2xl mx-auto px-10 pb-16 max-sm:px-5">
         <Breadcrumb />
         <div className="grid grid-cols-[200px_1fr] gap-x-10 max-md:grid-cols-1 max-md:gap-y-5">
           <Filters />

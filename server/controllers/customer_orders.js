@@ -86,6 +86,34 @@ async function createCustomerOrder(request, response) {
     });
 
     console.log("✅ Order created successfully:", corder);
+    try {
+      const settings = await prisma.siteSettings.findFirst({});
+      const adminUser = await prisma.user.findFirst({ where: { role: "admin" } });
+      if (adminUser) {
+        await prisma.notification.create({
+          data: {
+            userId: adminUser.id,
+            title: "New Order",
+            message: `Order ${corder.id} created with total ${validatedData.total}`,
+            type: "ORDER_UPDATE",
+            isRead: false,
+            priority: "HIGH",
+            metadata: { orderId: corder.id },
+          },
+        });
+      }
+      if (settings?.messengerEnabled && settings?.adminMessengerPsid && process.env.FACEBOOK_PAGE_TOKEN) {
+        const fetch = require("node-fetch");
+        const url = `https://graph.facebook.com/v18.0/me/messages?access_token=${process.env.FACEBOOK_PAGE_TOKEN}`;
+        const body = {
+          recipient: { id: settings.adminMessengerPsid },
+          message: { text: `New order ${corder.id} - total ${validatedData.total}` },
+        };
+        await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      }
+    } catch (notifyErr) {
+      console.error("Notification/Messenger failed:", notifyErr);
+    }
     console.log("Order ID:", corder.id);
 
     // Create notification for the user if they have an account

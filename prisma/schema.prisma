@@ -122,6 +122,7 @@ enum AvailabilityStatus {
 model Brand {
   id       String    @id @default(auto()) @map("_id") @db.ObjectId
   name     String    @unique
+  imageUrl String?
   products Product[]
 }
 

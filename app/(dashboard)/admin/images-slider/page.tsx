@@ -18,6 +18,7 @@ type Item = {
 export default function ImagesSliderAdminPage() {
   const [items, setItems] = useState<Item[]>([]);
   const [form, setForm] = useState<Partial<Item>>({ active: true, order: 0 });
+  const [uploading, setUploading] = useState(false);
 
   const load = async () => {
     const res = await apiClient.get("/api/slider");
@@ -25,6 +26,26 @@ export default function ImagesSliderAdminPage() {
     setItems(Array.isArray(data) ? data : []);
   };
   useEffect(() => { load(); }, []);
+
+  const onFileChange = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", files[0]);
+      const res = await fetch(`${apiClient.baseUrl}/api/slider/upload`, { method: "POST", body: formData });
+      const data = await res.json();
+      if (res.ok && data?.url) {
+        setForm({ ...form, imageUrl: data.url });
+        toast.success("Image uploaded");
+      } else {
+        toast.error(String(data?.error || "Upload failed"));
+      }
+    } catch {
+      toast.error("Upload failed");
+    }
+    setUploading(false);
+  };
 
   const create = async () => {
     if (!form.imageUrl) { toast.error("imageUrl required"); return; }
@@ -52,7 +73,13 @@ export default function ImagesSliderAdminPage() {
           <div className="border p-4 rounded">
             <h2 className="font-semibold mb-3">Add Item</h2>
             <div className="space-y-3">
-              <input placeholder="Image URL" className="input input-bordered w-full" value={form.imageUrl || ""} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} />
+              <div>
+                <input type="file" accept="image/*" onChange={(e)=>onFileChange(e.target.files)} />
+                {uploading && <span className="ml-2 text-sm">Uploading…</span>}
+                {form.imageUrl && (
+                  <div className="mt-2 text-xs text-gray-600">Uploaded: {form.imageUrl}</div>
+                )}
+              </div>
               <input placeholder="Title" className="input input-bordered w-full" value={form.title || ""} onChange={(e) => setForm({ ...form, title: e.target.value })} />
               <input placeholder="Subtitle" className="input input-bordered w-full" value={form.subtitle || ""} onChange={(e) => setForm({ ...form, subtitle: e.target.value })} />
               <input placeholder="CTA Text" className="input input-bordered w-full" value={form.ctaText || ""} onChange={(e) => setForm({ ...form, ctaText: e.target.value })} />

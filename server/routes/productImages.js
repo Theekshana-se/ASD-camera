@@ -4,7 +4,10 @@ const {
   getSingleProductImages,
   createImage,
   updateImage,
-  deleteImage
+  deleteImage,
+  uploadProductImages,
+  setMainImage,
+  deleteImageById,
 } = require('../controllers/productImages')
 
 
@@ -12,6 +15,9 @@ router.route('/:id').get(getSingleProductImages);
 
 
 router.route('/').post(createImage);
+router.post('/upload', uploadProductImages);
+router.put('/main/:imageId', setMainImage);
+router.delete('/image/:imageId', deleteImageById);
 
 
 router.route('/:id').put(updateImage);
