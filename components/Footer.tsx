@@ -8,30 +8,14 @@
 // Output: Footer component
 // *********************
 
-"use client";
 import { navigation } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { FaMapMarkerAlt, FaPhoneAlt, FaEnvelope, FaFacebookF, FaInstagram, FaGoogle } from "react-icons/fa";
-import apiClient from "@/lib/api";
 
 const Footer = ({ settings }: { settings?: any }) => {
-  const [current, setCurrent] = useState<any>(settings || {});
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await apiClient.get("/api/settings", { cache: "no-store" });
-        const data = await res.json();
-        setCurrent(data || {});
-      } catch {}
-    })();
-    const handler = (e: any) => {
-      setCurrent(e?.detail || current);
-    };
-    window.addEventListener('siteSettingsUpdated', handler as any);
-    return () => window.removeEventListener('siteSettingsUpdated', handler as any);
-  }, []);
+  const current = settings || {};
 
   const sale = Array.isArray(current?.footerSale) ? current.footerSale : navigation.sale;
   const about = Array.isArray(current?.footerAbout) ? current.footerAbout : navigation.about;

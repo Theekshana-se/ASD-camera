@@ -13,19 +13,20 @@ import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import HeaderTop from "./HeaderTop";
 import Image from "next/image";
-import SearchInput from "./SearchInput";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 
-import CartElement from "./CartElement";
-import NotificationBell from "./NotificationBell";
-import HeartElement from "./HeartElement";
+const SearchInput = dynamic(() => import("./SearchInput"), { ssr: false, loading: () => <div className="h-10 bg-gray-100 rounded w-full" /> });
+const CartElement = dynamic(() => import("./CartElement"), { ssr: false, loading: () => <div className="w-8 h-8 rounded bg-gray-100" /> });
+const NotificationBell = dynamic(() => import("./NotificationBell"), { ssr: false, loading: () => <div className="w-8 h-8 rounded bg-gray-100" /> });
+const HeartElement = dynamic(() => import("./HeartElement"), { ssr: false, loading: () => <div className="w-8 h-8 rounded bg-gray-100" /> });
 import { signOut, useSession } from "next-auth/react";
 import toast from "react-hot-toast";
 import { useWishlistStore } from "@/app/_zustand/wishlistStore";
 import apiClient from "@/lib/api";
 import { categoryMenuList } from "@/lib/utils";
 import { FaBars } from "react-icons/fa6";
-import { CategoryMegaMenu } from ".";
+const CategoryMegaMenu = dynamic(() => import("./CategoryMegaMenu"), { ssr: false, loading: () => <div className="h-12 border-t border-gray-200 bg-white" /> });
 
 type Settings = {
   logoUrl?: string;
