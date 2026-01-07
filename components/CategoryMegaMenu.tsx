@@ -43,7 +43,7 @@ const CategoryMegaMenu: React.FC = () => {
     abortRef.current = controller;
     setLoading(true);
     apiClient
-      .get(`/api/products?filters[category][$equals]=${encodeURIComponent(categoryName)}&sort=defaultSort&page=1`, { cache: "no-store", signal: controller.signal as any })
+      .get(`/api/products?filters[category][$equals]=${encodeURIComponent(categoryName)}&sort=defaultSort&page=1`, { signal: controller.signal as any, next: { revalidate: 60 } as any })
       .then((res) => res.json())
       .then((data) => {
         const arr: Product[] = Array.isArray(data) ? data.slice(0, 12) : [];

@@ -1,3 +1,4 @@
+"use client";
 import {
   CategoryMenu,
   Hero,
@@ -9,6 +10,7 @@ import {
   BrandsCarousel,
 } from "@/components";
 import ScrollReveal from "@/components/ScrollReveal";
+import React from "react";
 
 export default function Home() {
   return (

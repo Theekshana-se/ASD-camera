@@ -1,5 +1,4 @@
-export const revalidate = 60;
-
+ "use client";
 import {
   Breadcrumb,
   Filters,
@@ -21,11 +20,10 @@ const improveCategoryText = (text: string): string => {
   }
 };
 
-const ShopPage = async ({ params, searchParams }: { params: Promise<{ slug?: string[] }>, searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) => {
-  // Await both params and searchParams
-  const awaitedParams = await params;
-  const awaitedSearchParams = await searchParams;
-  
+const ShopPage = () => {
+  const pathname = typeof window !== "undefined" ? window.location.pathname : "/shop";
+  const segments = pathname.split("/").filter(Boolean);
+  const slug = segments[0] === "shop" ? segments[1] : "";
   return (
     <div className="text-black bg-white">
       <div className=" max-w-screen-2xl mx-auto px-10 pb-16 max-sm:px-5">
@@ -35,15 +33,15 @@ const ShopPage = async ({ params, searchParams }: { params: Promise<{ slug?: str
           <div>
             <div className="flex justify-between items-center max-lg:flex-col max-lg:gap-y-5">
               <h2 className="text-2xl font-bold max-sm:text-xl max-[400px]:text-lg uppercase">
-                {awaitedParams?.slug && awaitedParams?.slug[0]?.length > 0
-                  ? sanitize(improveCategoryText(awaitedParams?.slug[0]))
+                {slug && slug.length > 0
+                  ? sanitize(improveCategoryText(slug))
                   : "All products"}
               </h2>
 
               <SortBy />
             </div>
             <div className="divider"></div>
-            <Products params={awaitedParams} searchParams={awaitedSearchParams} />
+            <Products />
             <Pagination />
           </div>
         </div>

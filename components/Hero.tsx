@@ -16,26 +16,20 @@ import dynamic from "next/dynamic";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 const Slider = dynamic(() => import("react-slick"), { ssr: false }) as any;
+import { useSettings } from "@/Providers";
 
 const Hero = () => {
-  const [settingsData, setSettingsData] = useState<any>({});
+  const settingsData = useSettings() || {};
   const [sliderItems, setSliderItems] = useState<any[]>([]);
 
   useEffect(() => {
     const load = async () => {
       try {
-        const sres = await fetch(`${config.apiBaseUrl}/api/slider?active=true`, { cache: "no-store" });
+        const sres = await fetch(`${config.apiBaseUrl}/api/slider?active=true`);
         const sdata = await sres.json();
         setSliderItems(Array.isArray(sdata) ? sdata.filter((i: any) => i?.imageUrl) : []);
       } catch {
         setSliderItems([]);
-      }
-      try {
-        const res = await fetch(`${config.apiBaseUrl}/api/settings`, { cache: "no-store" });
-        const data = await res.json();
-        setSettingsData(data || {});
-      } catch {
-        setSettingsData({});
       }
     };
     load();

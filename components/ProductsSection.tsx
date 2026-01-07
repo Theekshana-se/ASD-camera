@@ -13,25 +13,29 @@ import ProductCard from "./ProductCard";
 import Heading from "./Heading";
 import apiClient from "@/lib/api";
 
-const ProductsSection = async () => {
-  let products = [];
-  
-  try {
-    // sending API request for getting all products (no cache to reflect deletions immediately)
-    const data = await apiClient.get("/api/products", { cache: "no-store" });
-    
-    if (!data.ok) {
-      console.error('Failed to fetch products:', data.statusText);
-      products = [];
-    } else {
-      const result = await data.json();
-      // Ensure products is an array
-      products = Array.isArray(result) ? result : [];
-    }
-  } catch (error) {
-    console.error('Error fetching products:', error);
-    products = [];
-  }
+const ProductsSection = () => {
+  const [products, setProducts] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  React.useEffect(() => {
+    let active = true;
+    (async () => {
+      setLoading(true);
+      try {
+        const data = await apiClient.get("/api/products");
+        if (!data.ok) {
+          if (active) setProducts([]);
+        } else {
+          const result = await data.json();
+          if (active) setProducts(Array.isArray(result) ? result : []);
+        }
+      } catch {
+        if (active) setProducts([]);
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+    return () => { active = false; };
+  }, [])
 
   return (
     <div className="bg-white border-t border-gray-100">
@@ -43,8 +47,12 @@ const ProductsSection = async () => {
               <ProductCard key={product.id} product={product} />
             ))
           ) : (
-            <div className="col-span-full text-center text-gray-600 py-10">
-              <p>No products available at the moment.</p>
+            <div className="col-span-full grid grid-cols-4 gap-4 max-xl:grid-cols-3 max-md:grid-cols-2 max-sm:grid-cols-1 w-full">
+              {loading
+                ? Array.from({ length: 8 }).map((_, i) => (
+                    <div key={i} className="h-48 w-full bg-gray-100 rounded animate-pulse" />
+                  ))
+                : <div className="text-center text-gray-600 py-10">No products available at the moment.</div>}
             </div>
           )}
         </div>
