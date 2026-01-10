@@ -40,12 +40,19 @@ export default function PromotionsAdminPage() {
     try {
       const formData = new FormData();
       formData.append("file", files[0]);
-      // Reusing the slider upload endpoint as it provides a generic image upload capability
-      const res = await fetch(`${apiClient.baseUrl}/api/slider/upload`, { method: "POST", body: formData });
+      // Use the dedicated banners upload endpoint
+      const res = await fetch(`${apiClient.baseUrl}/api/banners/upload`, { method: "POST", body: formData });
       const data = await res.json();
-      if (res.ok && data?.url) {
-        setForm({ ...form, imageUrl: data.url });
-        toast.success("Image uploaded");
+      
+      if (res.ok) {
+        // Handle both singular url (legacy/slider) and plural urls (banners) formats
+        const uploadedUrl = data.url || (data.urls && data.urls[0]);
+        if (uploadedUrl) {
+          setForm({ ...form, imageUrl: uploadedUrl });
+          toast.success("Image uploaded");
+        } else {
+          toast.error("Invalid response from server");
+        }
       } else {
         toast.error(String(data?.error || "Upload failed"));
       }

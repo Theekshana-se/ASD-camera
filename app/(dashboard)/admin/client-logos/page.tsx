@@ -122,12 +122,18 @@ export default function ClientLogosAdminPage() {
               <div className="p-6 space-y-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-400">Logo Image URL</label>
-                  <input
-                    placeholder="https://example.com/logo.png"
-                    className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-teal-500/50 focus:ring-2 focus:ring-teal-500/20 transition-all"
-                    value={form.imageUrl || ""}
-                    onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
-                  />
+                  <div className="flex gap-2">
+                    <input
+                      placeholder="https://example.com/logo.png"
+                      className="flex-1 px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-teal-500/50 focus:ring-2 focus:ring-teal-500/20 transition-all"
+                      value={form.imageUrl || ""}
+                      onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
+                    />
+                    <label className="cursor-pointer px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl hover:bg-gray-700 transition-colors">
+                      <FaPlus className="text-teal-400" />
+                      <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
+                    </label>
+                  </div>
                   {form.imageUrl && (
                     <div className="mt-2 relative w-full h-24 rounded-lg overflow-hidden bg-gray-800 p-4 flex items-center justify-center">
                       <Image 
