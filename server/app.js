@@ -90,6 +90,9 @@ app.use(express.urlencoded({ extended: true, limit: '15mb' }));
 app.use(cors(corsOptions));
 app.use(fileUpload());
 
+// Serve static files from the 'public' directory (project root)
+app.use(express.static(path.join(__dirname, '..', 'public')));
+
 // Apply specific rate limiters to different route groups
 app.use("/api/users", userManagementLimiter);
 app.use("/api/search", searchLimiter);

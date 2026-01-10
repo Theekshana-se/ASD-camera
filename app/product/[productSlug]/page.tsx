@@ -16,6 +16,7 @@ import { FaSquarePinterest } from "react-icons/fa6";
 import { sanitize } from "@/lib/sanitize";
 import { formatCategoryName } from "@/utils/categoryFormating";
 import type { Metadata } from 'next';
+import { getImageUrl } from "@/lib/utils";
 
 interface ImageItem {
   imageID: string;
@@ -87,8 +88,8 @@ const SingleProductPage = async ({ params }: SingleProductPageProps) => {
       <div className="max-w-screen-2xl mx-auto">
         <div className="flex justify-center gap-x-16 pt-10 max-lg:flex-col items-start gap-y-5 px-5">
           <ProductGallery
-            main={product?.mainImage ? (product.mainImage.startsWith('http') || product.mainImage.startsWith('/') ? product.mainImage : `/${product.mainImage}`) : '/product_placeholder.jpg'}
-            images={(Array.isArray(images) ? images : []).map((img: any) => (img?.image?.startsWith('/') || img?.image?.startsWith('http') ? img.image : `/${img?.image}`))}
+            main={getImageUrl(product?.mainImage)}
+            images={(Array.isArray(images) ? images : []).map((img: any) => getImageUrl(img?.image))}
           />
           <div className="flex flex-col gap-y-7 text-[#1A1F2E] max-[500px]:text-center">
             <h1 className="text-3xl font-bold">{sanitize(product?.title)}</h1>

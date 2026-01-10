@@ -7,6 +7,7 @@ import { FiShoppingCart, FiHeart } from "react-icons/fi";
 import { useProductStore } from "@/app/_zustand/store";
 import toast from "react-hot-toast";
 import SmartButton from "./SmartButton";
+import { getImageUrl } from "@/lib/utils";
 
 interface ProductCardProps {
   product: Product;
@@ -28,7 +29,7 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
       id: product?.id.toString(),
       title: product?.title,
       price: product?.price,
-      image: product?.mainImage,
+      image: getImageUrl(product.imageUrl || product.mainImage),
       amount: 1
     });
     calculateTotals();
@@ -42,7 +43,8 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
   const isFeatured = product.isFeatured || false;
 
   // Use correct field names from Product type
-  const productImage = product.imageUrl || product.mainImage || "/placeholder.png";
+  const rawImage = product.imageUrl || product.mainImage;
+  const productImage = getImageUrl(rawImage);
   const productName = product.name || product.title || "Product";
   const productStock = product.stock ?? product.inStock ?? 0;
 

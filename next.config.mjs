@@ -7,6 +7,7 @@ const nextConfig = {
       { protocol: 'http', hostname: 'localhost', port: '3001' },
       { protocol: 'https', hostname: 'localhost', port: '3001' },
       { protocol: 'http', hostname: '127.0.0.1', port: '3001' },
+      { protocol: 'https', hostname: 'electronics-shop-backend-rfs4.onrender.com' },
     ],
     // Optimize image caching
     minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days

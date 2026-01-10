@@ -32,7 +32,7 @@ const ProductGallery: React.FC<GalleryProps> = ({ main, images }) => {
       <div className="flex-1">
         <div className="relative w-full h-[480px] bg-white border rounded-lg overflow-hidden group">
           <Image
-            src={current?.startsWith("/") || current?.startsWith("http") ? current : `/${current}`}
+            src={current}
             alt="Product"
             fill
             className="object-contain transition-transform duration-300 group-hover:scale-105"
@@ -43,7 +43,7 @@ const ProductGallery: React.FC<GalleryProps> = ({ main, images }) => {
         <div className="mt-3 flex gap-2 overflow-x-auto">
           {all.map((img, i) => (
             <button key={`${img}-${i}`} className={`relative h-20 w-24 border rounded-md ${i===idx? 'ring-2 ring-red-600':''}`} onClick={()=>setIdx(i)}>
-              <Image src={img?.startsWith("/") || img?.startsWith("http") ? img : `/${img}`} alt="thumb" fill className="object-contain" />
+              <Image src={img} alt="thumb" fill className="object-contain" />
             </button>
           ))}
         </div>
@@ -55,7 +55,7 @@ const ProductGallery: React.FC<GalleryProps> = ({ main, images }) => {
             <ReactSlick {...settings}>
               {all.map((img, i) => (
                 <div key={`${img}-modal-${i}`} className="relative h-[70vh]">
-                  <Image src={img?.startsWith("/") || img?.startsWith("http") ? img : `/${img}`} alt="modal" fill className="object-contain" />
+                  <Image src={img} alt="modal" fill className="object-contain" />
                 </div>
               ))}
             </ReactSlick>

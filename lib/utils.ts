@@ -1,3 +1,20 @@
+import config from "./config";
+
+export const getImageUrl = (path: string | undefined | null) => {
+  if (!path) return "/product_placeholder.jpg";
+  if (path.startsWith("http")) return path;
+  
+  // If it's a stored product image path (usually "products/..." or "/products/...")
+  if (path.includes("products/")) {
+     const baseUrl = config.apiBaseUrl?.replace(/\/$/, "") || "";
+     const cleanPath = path.startsWith("/") ? path : `/${path}`;
+     return `${baseUrl}${cleanPath}`;
+  }
+  
+  // Otherwise assume it's a local public asset (like /logo.png)
+  return path.startsWith("/") ? path : `/${path}`;
+};
+
 export const categoryMenuList = [
   {
     id: 1,
