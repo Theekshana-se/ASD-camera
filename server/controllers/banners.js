@@ -1,5 +1,15 @@
 const prisma = require("../utills/db");
 const { asyncHandler, AppError } = require("../utills/errorHandler");
+const path = require("path");
+const fs = require("fs");
+
+function ensureDir(dir) {
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+}
+
+function isAllowedMime(m) {
+  return ["image/jpeg", "image/png", "image/webp"].includes(String(m).toLowerCase());
+}
 
 const listBanners = asyncHandler(async (req, res) => {
   const items = await prisma.banner.findMany({ orderBy: { order: "asc" } });
