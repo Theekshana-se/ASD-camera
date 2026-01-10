@@ -47,4 +47,4 @@ const deleteBanner = asyncHandler(async (req, res) => {
   res.status(204).send();
 });
 
-module.exports = { listBanners, createBanner, updateBanner, deleteBanner };
+module.exports = { listBanners, createBanner, updateBanner, deleteBanner, uploadBannerImage };

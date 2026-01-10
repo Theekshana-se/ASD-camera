@@ -4,6 +4,7 @@ import Image from "next/image";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { FaUsers, FaGlobe, FaStar, FaHandshake, FaCheck } from "react-icons/fa";
 import apiClient from "@/lib/api";
+import { getImageUrl } from "@/lib/utils";
 
 // Animation variants
 const fadeInUp = {
@@ -296,7 +297,7 @@ export default function ClientsPage() {
                       <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-red-500 to-orange-500 opacity-0 group-hover:opacity-10 rounded-bl-full transition-all duration-300" />
                       <div className="relative w-full h-20 flex items-center justify-center">
                         <Image
-                          src={logo.imageUrl}
+                          src={getImageUrl(logo.imageUrl)}
                           alt={logo.alt || "Client logo"}
                           width={150}
                           height={80}
@@ -309,7 +310,7 @@ export default function ClientsPage() {
                       <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-red-500 to-orange-500 opacity-0 group-hover:opacity-10 rounded-bl-full transition-all duration-300" />
                       <div className="relative w-full h-20 flex items-center justify-center">
                         <Image
-                          src={logo.imageUrl}
+                          src={getImageUrl(logo.imageUrl)}
                           alt={logo.alt || "Client logo"}
                           width={150}
                           height={80}

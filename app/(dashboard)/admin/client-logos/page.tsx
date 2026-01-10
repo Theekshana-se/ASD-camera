@@ -1,5 +1,6 @@
 "use client";
 import { DashboardSidebar, AdminHeader } from "@/components";
+import { getImageUrl } from "@/lib/utils";
 import React, { useEffect, useState } from "react";
 import apiClient from "@/lib/api";
 import toast from "react-hot-toast";
@@ -40,6 +41,31 @@ export default function ClientLogosAdminPage() {
       load(); 
     } else {
       toast.error("Failed to add");
+    }
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("files", file);
+
+    try {
+      const res = await fetch(`${apiClient.baseUrl}/api/client-logos/upload`, {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (res.ok && data.urls && data.urls.length > 0) {
+        setForm({ ...form, imageUrl: data.urls[0] });
+        toast.success("Image uploaded");
+      } else {
+        toast.error("Upload failed");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Upload error");
     }
   };
 
@@ -105,7 +131,7 @@ export default function ClientLogosAdminPage() {
                   {form.imageUrl && (
                     <div className="mt-2 relative w-full h-24 rounded-lg overflow-hidden bg-gray-800 p-4 flex items-center justify-center">
                       <Image 
-                        src={form.imageUrl} 
+                        src={getImageUrl(form.imageUrl)} 
                         alt="Preview" 
                         width={120}
                         height={60}

@@ -45,4 +45,4 @@ const deleteClientLogo = asyncHandler(async (req, res) => {
   res.status(204).send();
 });
 
-module.exports = { listClientLogos, createClientLogo, updateClientLogo, deleteClientLogo };
+module.exports = { listClientLogos, createClientLogo, updateClientLogo, deleteClientLogo, uploadClientLogoImage };

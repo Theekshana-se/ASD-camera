@@ -1,5 +1,6 @@
 "use client";
 import Heading from "./Heading";
+import { getImageUrl } from "@/lib/utils";
 import Link from "next/link";
 import apiClient from "@/lib/api";
 import React from "react";
@@ -205,7 +206,7 @@ export default function BrandsCarousel() {
                             {/* Brand Logo */}
                             <div className="relative h-24 w-full flex items-center justify-center">
                               <Image
-                                src={it.imageUrl}
+                                src={getImageUrl(it.imageUrl)}
                                 alt={it.alt || "Brand"}
                                 width={200}
                                 height={96}

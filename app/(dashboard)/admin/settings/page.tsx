@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { DashboardSidebar, AdminHeader } from "@/components";
 import apiClient from "@/lib/api";
-import { navigation } from "@/lib/utils";
+import { navigation, getImageUrl } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   FaGear, FaImage, FaPhone, FaEnvelope, FaBell, FaLink, 
@@ -649,7 +649,7 @@ const AdminSettingsPage = () => {
                           animate={{ opacity: 1, scale: 1 }}
                           className="relative bg-gray-800/50 rounded-xl p-3 border border-gray-700"
                         >
-                          <img src={pm.imageUrl} alt={pm.name || "Payment"} className="h-12 w-full object-contain" />
+                          <img src={getImageUrl(pm.imageUrl)} alt={pm.name || "Payment"} className="h-12 w-full object-contain" />
                           <input
                             className="mt-2 w-full px-2 py-1 bg-gray-700/50 border border-gray-600 rounded text-white text-xs"
                             placeholder="Label (optional)"

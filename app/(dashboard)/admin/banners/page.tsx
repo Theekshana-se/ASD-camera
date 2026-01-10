@@ -2,6 +2,7 @@
 import { DashboardSidebar, AdminHeader } from "@/components";
 import React, { useEffect, useState } from "react";
 import apiClient from "@/lib/api";
+import { getImageUrl } from "@/lib/utils";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaRectangleAd, FaPlus, FaTrash, FaToggleOn, FaToggleOff, FaLink, FaUpload, FaCheck, FaImage } from "react-icons/fa6";
@@ -154,14 +155,14 @@ export default function PromotionsAdminPage() {
                         <span>Image ready</span>
                       </div>
                       <div className="relative w-full h-32 rounded-lg overflow-hidden bg-gray-800">
-                        <Image 
-                          src={form.imageUrl} 
-                          alt="Preview" 
-                          fill 
-                          className="object-cover"
-                          onError={() => toast.error("Invalid image URL")}
-                        />
-                      </div>
+                      <Image 
+                        src={getImageUrl(form.imageUrl)} 
+                        alt="Preview" 
+                        fill 
+                        className="object-cover"
+                        onError={() => toast.error("Invalid image URL")}
+                      />
+                    </div>
                     </div>
                   )}
                 </div>

@@ -8,7 +8,7 @@
 // Output: Footer component
 // *********************
 
-import { navigation } from "@/lib/utils";
+import { navigation, getImageUrl } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
@@ -114,7 +114,7 @@ const Footer = ({ settings }: { settings?: any }) => {
                 {payments.map((pm: any, idx: number) => (
                   <div key={idx} className="h-12 w-full bg-white rounded shadow flex items-center justify-center p-2">
                     {pm?.imageUrl ? (
-                      <Image src={pm.imageUrl} alt={pm?.name || 'payment'} width={80} height={40} className="max-h-10 w-auto object-contain" />
+                      <Image src={getImageUrl(pm.imageUrl)} alt={pm?.name || 'payment'} width={80} height={40} className="max-h-10 w-auto object-contain" />
                     ) : (
                       <span className="text-xs text-gray-500">No image</span>
                     )}
