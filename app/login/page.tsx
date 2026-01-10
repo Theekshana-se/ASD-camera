@@ -28,10 +28,11 @@ const LoginPage = () => {
     }
   }, [sessionStatus, router, searchParams]);
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const email = e.target[0].value;
-    const password = e.target[1].value;
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
 
     if (!isValidEmailAddressFormat(email)) {
       setError("Email is invalid");

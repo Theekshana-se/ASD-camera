@@ -23,12 +23,19 @@ const RegisterPage = () => {
     const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
     return emailRegex.test(email);
   };
+
+  const isValidPassword = (password: string) => {
+    // At least 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    return passwordRegex.test(password);
+  };
   
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const email = e.target[2].value;
-    const password = e.target[3].value;
-    const confirmPassword = e.target[4].value;
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+    const confirmPassword = formData.get("confirmpassword") as string;
 
     if (!isValidEmail(email)) {
       setError("Email is invalid");
@@ -36,9 +43,10 @@ const RegisterPage = () => {
       return;
     }
 
-    if (!password || password.length < 8) {
-      setError("Password must be 8 characters long");
-      toast.error("Password must be 8 characters long");
+    if (!isValidPassword(password)) {
+      const msg = "Password must be at least 8 characters, include uppercase, lowercase, number and special character";
+      setError(msg);
+      toast.error(msg);
       return;
     }
 
