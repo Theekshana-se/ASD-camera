@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -26,7 +27,9 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} bg-[#F8F9FA]`}>
-        <GlobalLoadingBar />
+        <Suspense fallback={null}>
+          <GlobalLoadingBar />
+        </Suspense>
         <LenisScrollWrapper>
           <SessionProvider>
             <SessionTimeoutWrapper />
