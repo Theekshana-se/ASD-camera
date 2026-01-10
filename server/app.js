@@ -31,11 +31,11 @@ const settingsRouter = require('./routes/settings');
 var cors = require("cors");
 
 // Import logging middleware
-const { 
-  addRequestId, 
-  requestLogger, 
-  errorLogger, 
-  securityLogger 
+const {
+  addRequestId,
+  requestLogger,
+  errorLogger,
+  securityLogger
 } = require('./middleware/requestLogger');
 
 // Import rate limiting middleware
@@ -86,17 +86,17 @@ const corsOptions = {
   origin: function (origin, callback) {
 
     if (!origin) return callback(null, true);
-    
+
 
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
-    
+
 
     if (process.env.NODE_ENV === 'development' && origin.startsWith('http://localhost:')) {
       return callback(null, true);
     }
-    
+
     // Reject other origins
     const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
     return callback(new Error(msg), false);
@@ -152,7 +152,7 @@ app.use("/api/banners", bannersRouter);
 app.use("/api/messenger", messengerRouter);
 // app.use("/api/wishlist", wishlistRouter);
 app.use("/api/notifications", notificationsRouter);
-app.use("/api/merchants", merchantRouter); 
+app.use("/api/merchants", merchantRouter);
 app.use("/api/bulk-upload", bulkUploadRouter);
 app.use("/api/settings", settingsRouter);
 app.use("/api/payment-methods", paymentMethodsRouter);
@@ -161,8 +161,8 @@ app.use("/api/stats", statsRouter);
 
 // Health check endpoint (no rate limiting)
 app.get('/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'OK', 
+  res.status(200).json({
+    status: 'OK',
     timestamp: new Date().toISOString(),
     rateLimiting: 'enabled',
     requestId: req.reqId
@@ -197,7 +197,7 @@ app.use((err, req, res, next) => {
   handleServerError(err, res, `${req.method} ${req.path}`);
 });
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3002;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log('Rate limiting and request logging enabled for all endpoints');

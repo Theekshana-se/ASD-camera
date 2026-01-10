@@ -48,6 +48,10 @@ export { default as OurServicesSection } from "./OurServicesSection";
 export { default as CategoryMegaMenu } from "./CategoryMegaMenu";
 export { default as CategoryPopoverProduct } from "./CategoryPopoverProduct";
 export { default as DashboardSidebar } from "./DashboardSidebar";
+export { default as AdminHeader } from "./AdminHeader";
+export { default as AdminPageLayout } from "./AdminPageLayout";
+export { default as AdminLoadingBar } from "./AdminLoadingBar";
+export { NavigationProvider, useNavigation } from "./NavigationProvider";
 export { default as StatsElement } from "./StatsElement";
 export { default as DashboardProductTable } from "./DashboardProductTable";
 export { default as AdminOrders } from "./AdminOrders";
@@ -55,3 +59,9 @@ export { default as OrderItem } from "./OrderItem";
 export { default as NotificationBell } from "./NotificationBell";
 export { default as NotificationCard } from "./NotificationCard";
 export { default as BulkUploadHistory } from "./BulkUploadHistory";
+
+// Loading & Performance Components
+export { default as GlobalLoadingBar } from "./GlobalLoadingBar";
+export { default as PageLoadingSpinner } from "./PageLoadingSpinner";
+export { default as SmartLink } from "./SmartLink";
+export { default as SmartButton } from "./SmartButton";

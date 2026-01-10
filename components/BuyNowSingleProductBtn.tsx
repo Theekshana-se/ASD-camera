@@ -13,6 +13,7 @@ import { useProductStore } from "@/app/_zustand/store";
 import React from "react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import SmartButton from "./SmartButton";
 
 const BuyNowSingleProductBtn = ({
   product,
@@ -21,7 +22,7 @@ const BuyNowSingleProductBtn = ({
   const router = useRouter();
   const { addToCart, calculateTotals } = useProductStore();
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     addToCart({
       id: product?.id.toString(),
       title: product?.title,
@@ -32,14 +33,17 @@ const BuyNowSingleProductBtn = ({
     calculateTotals();
     toast.success("Product added to the cart");
     router.push("/checkout");
+    // Keep loading indefinitely as we navigate away
+    await new Promise(() => {}); 
   };
   return (
-    <button
+    <SmartButton
       onClick={handleAddToCart}
-      className="btn w-[200px] text-lg border border-red-600 hover:border-red-700 border-1 font-normal bg-red-600 text-white hover:bg-white hover:scale-110 hover:text-red-600 transition-all uppercase ease-in max-[500px]:w-full"
+      className="w-[200px] text-lg uppercase max-[500px]:w-full bg-red-600 text-white border border-red-600 hover:bg-white hover:text-red-600"
+      variant="primary"
     >
       Buy Now
-    </button>
+    </SmartButton>
   );
 };
 

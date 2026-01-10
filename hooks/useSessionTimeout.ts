@@ -2,6 +2,7 @@
 
 import { useSession, signOut } from "next-auth/react";
 import { useEffect, useRef } from "react";
+import { useProductStore } from "@/app/_zustand/store";
 
 // Production timeout: 15 minutes
 const SESSION_TIMEOUT = 15 * 60 * 1000; // 15 minutes in milliseconds
@@ -9,6 +10,7 @@ const SESSION_TIMEOUT = 15 * 60 * 1000; // 15 minutes in milliseconds
 export function useSessionTimeout() {
   const { data: session, status } = useSession();
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const { clearCart } = useProductStore();
 
   useEffect(() => {
     // Only run on client side
@@ -23,6 +25,7 @@ export function useSessionTimeout() {
         
         // Set new timeout
         timeoutRef.current = setTimeout(() => {
+          clearCart();
           signOut({ 
             callbackUrl: "/login?expired=true",
             redirect: true 

@@ -3,12 +3,12 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import 'svgmap/dist/svgMap.min.css';
 import SessionProvider from "@/utils/SessionProvider";
-import Header from "@/components/Header";
-import WhatsAppButton from "@/components/WhatsAppButton";
-import Footer from "@/components/Footer";
 import { getSiteSettings } from "@/lib/site-settings";
 import Providers from "@/Providers";
 import SessionTimeoutWrapper from "@/components/SessionTimeoutWrapper";
+import LenisScrollWrapper from "@/components/LenisScrollWrapper";
+import ConditionalLayout from "@/components/ConditionalLayout";
+import GlobalLoadingBar from "@/components/GlobalLoadingBar";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,19 +24,19 @@ export default async function RootLayout({
 }>) {
   const settings = await getSiteSettings();
   return (
-    <html lang="en" data-theme="light">
-      <body className={inter.className}>
-        <SessionProvider>
-          <SessionTimeoutWrapper />
-          <Header settings={settings} />
-          <Providers settings={settings}>
-            {children}
-          </Providers>
-          <Footer settings={settings} />
-          {settings?.whatsappEnabled && settings?.whatsappNumber && (
-            <WhatsAppButton number={settings.whatsappNumber} />
-          )}
-        </SessionProvider>
+    <html lang="en">
+      <body className={`${inter.className} bg-[#F8F9FA]`}>
+        <GlobalLoadingBar />
+        <LenisScrollWrapper>
+          <SessionProvider>
+            <SessionTimeoutWrapper />
+            <Providers settings={settings}>
+              <ConditionalLayout settings={settings}>
+                {children}
+              </ConditionalLayout>
+            </Providers>
+          </SessionProvider>
+        </LenisScrollWrapper>
       </body>
     </html>
   );

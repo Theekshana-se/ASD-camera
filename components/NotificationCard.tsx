@@ -13,14 +13,14 @@ const formatTimeAgo = (date: string) => {
   return past.toLocaleDateString();
 };
 import { 
-  FaShoppingCart, 
+  FaCartShopping, 
   FaCreditCard, 
   FaTag, 
-  FaExclamationTriangle,
+  FaTriangleExclamation,
   FaCheck,
   FaTrash,
   FaCircle 
-} from 'react-icons/fa';
+} from 'react-icons/fa6';
 
 interface NotificationCardProps {
   notification: Notification;
@@ -33,13 +33,13 @@ interface NotificationCardProps {
 const getTypeIcon = (type: NotificationType) => {
   switch (type) {
     case NotificationType.ORDER_UPDATE:
-      return <FaShoppingCart className="text-red-500" />;
+      return <FaCartShopping className="text-red-500" />;
     case NotificationType.PAYMENT_STATUS:
       return <FaCreditCard className="text-green-500" />;
     case NotificationType.PROMOTION:
       return <FaTag className="text-purple-500" />;
     case NotificationType.SYSTEM_ALERT:
-      return <FaExclamationTriangle className="text-red-500" />;
+      return <FaTriangleExclamation className="text-red-500" />;
     default:
       return <FaCircle className="text-gray-500" />;
   }
