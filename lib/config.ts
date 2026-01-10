@@ -1,5 +1,15 @@
+const getBaseUrl = () => {
+  if (process.env.NEXT_PUBLIC_API_BASE_URL) {
+    return process.env.NEXT_PUBLIC_API_BASE_URL;
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  return 'http://localhost:3000';
+};
+
 const config = {
-  apiBaseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3002',
+  apiBaseUrl: getBaseUrl(),
   nextAuthUrl: process.env.NEXTAUTH_URL || 'http://localhost:3000',
 };
 

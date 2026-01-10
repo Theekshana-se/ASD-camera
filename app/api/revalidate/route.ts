@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
 
         // Revalidate by tag
         if (tag) {
-            revalidateTag(tag);
+            revalidateTag(tag, 'default');
             console.log(`✅ Revalidated tag: ${tag}`);
         }
 
