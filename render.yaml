@@ -2,7 +2,7 @@ services:
   - type: web
     name: electronics-shop-backend
     env: node
-    root: server
+    rootDir: server
     plan: free
     buildCommand: npm install && npx prisma generate
     startCommand: node app.js
