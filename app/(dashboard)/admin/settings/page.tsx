@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { DashboardSidebar, AdminHeader } from "@/components";
 import apiClient from "@/lib/api";
+import { navigation } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   FaGear, FaImage, FaPhone, FaEnvelope, FaBell, FaLink, 
@@ -140,10 +141,10 @@ const AdminSettingsPage = () => {
       heroImageUrl: data?.heroImageUrl || "",
       noticeBarText: data?.noticeBarText || "",
       noticeBarEnabled: Boolean(data?.noticeBarEnabled) || false,
-      footerSale: data?.footerSale || [],
-      footerAbout: data?.footerAbout || [],
-      footerBuy: data?.footerBuy || [],
-      footerHelp: data?.footerHelp || [],
+      footerSale: data?.footerSale || navigation.sale,
+      footerAbout: data?.footerAbout || navigation.about,
+      footerBuy: data?.footerBuy || navigation.buy,
+      footerHelp: data?.footerHelp || navigation.help,
       asdCameraTitle: data?.asdCameraTitle || "ASD Camera",
       asdCameraDescription: data?.asdCameraDescription || "",
       asdCameraLocations: Array.isArray(data?.asdCameraLocations) ? data.asdCameraLocations : [],
