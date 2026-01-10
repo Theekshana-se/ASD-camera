@@ -116,7 +116,7 @@ const DashboardSidebar = () => {
           {!collapsed && (
             <div className="flex-1 min-w-0">
               <div className="text-white font-medium text-sm truncate">Admin User</div>
-              <div className="text-gray-500 text-xs truncate">admin@singitronic.com</div>
+              <div className="text-gray-500 text-xs truncate">admin@asdcamera.com</div>
             </div>
           )}
         </div>

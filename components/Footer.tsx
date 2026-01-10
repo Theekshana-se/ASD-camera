@@ -37,8 +37,9 @@ const Footer = ({ settings }: { settings?: any }) => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="space-y-4">
             <div className="flex items-center gap-4">
+              {logo && <Image src={logo} alt={title} width={40} height={40} className="object-contain" />}
               <h3 className="text-2xl font-semibold">
-                <span className="text-red-600">ASD</span> <span>Camera</span>
+                {title}
               </h3>
             </div>
             {desc && <p className="text-sm text-gray-700 max-w-md">{desc}</p>}
