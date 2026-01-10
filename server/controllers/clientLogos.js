@@ -1,5 +1,15 @@
 const prisma = require("../utills/db");
 const { asyncHandler, AppError } = require("../utills/errorHandler");
+const path = require("path");
+const fs = require("fs");
+
+function ensureDir(dir) {
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+}
+
+function isAllowedMime(m) {
+  return ["image/jpeg", "image/png", "image/webp"].includes(String(m).toLowerCase());
+}
 
 const listClientLogos = asyncHandler(async (req, res) => {
   const items = await prisma.clientLogo.findMany({ orderBy: { order: "asc" } });
@@ -43,6 +53,31 @@ const deleteClientLogo = asyncHandler(async (req, res) => {
   if (!id) throw new AppError("id is required", 400);
   await prisma.clientLogo.delete({ where: { id } });
   res.status(204).send();
+});
+
+const uploadClientLogoImage = asyncHandler(async (req, res) => {
+  const file = req.files?.files || req.files?.file || null;
+  if (!file) return res.status(400).json({ error: "No file uploaded" });
+
+  // If multiple files, handle array
+  const filesArr = Array.isArray(file) ? file : [file];
+  const urls = [];
+
+  const targetDir = path.join(__dirname, "..", "..", "public", "client-logos");
+  ensureDir(targetDir);
+
+  for (const f of filesArr) {
+    if (!isAllowedMime(f.mimetype) || f.size > 5 * 1024 * 1024) {
+      // Skip invalid files or throw error? For now, we'll error out if any is invalid to be safe
+      return res.status(400).json({ error: "Invalid image. Allowed: jpeg, png, webp; max 5MB" });
+    }
+    const safeName = Date.now() + "-" + String(f.name || "logo.jpg").replace(/[^a-zA-Z0-9._-]/g, "_");
+    const dest = path.join(targetDir, safeName);
+    await f.mv(dest);
+    urls.push(`/client-logos/${safeName}`);
+  }
+
+  res.status(200).json({ urls });
 });
 
 module.exports = { listClientLogos, createClientLogo, updateClientLogo, deleteClientLogo, uploadClientLogoImage };
