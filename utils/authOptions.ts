@@ -76,16 +76,8 @@ export const authOptions = {
     },
     async jwt({ token, user }: any) {
       if (user) {
-        (token as any).role = (user as any).role;
-        (token as any).id = (user as any).id;
-        token.iat = Math.floor(Date.now() / 1000);
-      }
-      const now = Math.floor(Date.now() / 1000);
-      const iat = (token.iat as number) ?? now;
-      const tokenAge = now - iat;
-      const maxAge = 15 * 60;
-      if (tokenAge > maxAge) {
-        return {} as any;
+        token.role = user.role;
+        token.id = user.id;
       }
       return token;
     },
