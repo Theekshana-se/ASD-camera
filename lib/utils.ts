@@ -5,7 +5,7 @@ export const getImageUrl = (path: string | undefined | null) => {
   if (path.startsWith("http")) return path;
   
   // If it's a stored product image path (usually "products/..." or "/products/...")
-  if (path.includes("products/")) {
+  if (path.includes("products/") || path.includes("payment-methods/") || path.includes("slider/") || path.includes("client-logos/") || path.includes("banners/")) {
      const baseUrl = config.apiBaseUrl?.replace(/\/$/, "") || "";
      const cleanPath = path.startsWith("/") ? path : `/${path}`;
      return `${baseUrl}${cleanPath}`;

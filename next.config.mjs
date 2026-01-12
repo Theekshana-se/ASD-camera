@@ -3,11 +3,34 @@ const nextConfig = {
   images: {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
+      // Allow common placeholder services
       { protocol: 'https', hostname: 'placehold.co' },
+      { protocol: 'https', hostname: 'via.placeholder.com' },
+      { protocol: 'https', hostname: 'placeholder.com' },
+
+      // Allow localhost for development
       { protocol: 'http', hostname: 'localhost', port: '3001' },
       { protocol: 'https', hostname: 'localhost', port: '3001' },
       { protocol: 'http', hostname: '127.0.0.1', port: '3001' },
+      { protocol: 'http', hostname: 'localhost', port: '3002' },
+      { protocol: 'http', hostname: '127.0.0.1', port: '3002' },
+
+      // Allow backend server
       { protocol: 'https', hostname: 'electronics-shop-backend-rfs4.onrender.com' },
+
+      // Allow common image CDNs and hosting services
+      { protocol: 'https', hostname: 'images.unsplash.com' },
+      { protocol: 'https', hostname: 'unsplash.com' },
+      { protocol: 'https', hostname: 'cdn.shopify.com' },
+      { protocol: 'https', hostname: 'res.cloudinary.com' },
+      { protocol: 'https', hostname: 'cloudinary.com' },
+      { protocol: 'https', hostname: 'imgur.com' },
+      { protocol: 'https', hostname: 'i.imgur.com' },
+      { protocol: 'https', hostname: 'picsum.photos' },
+      { protocol: 'https', hostname: 'source.unsplash.com' },
+
+      // Allow any HTTPS image source (for maximum compatibility on Vercel)
+      { protocol: 'https', hostname: '**' },
     ],
     // Optimize image caching
     minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
