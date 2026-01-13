@@ -65,3 +65,5 @@ export { default as GlobalLoadingBar } from "./GlobalLoadingBar";
 export { default as PageLoadingSpinner } from "./PageLoadingSpinner";
 export { default as SmartLink } from "./SmartLink";
 export { default as SmartButton } from "./SmartButton";
+export { default as ModernProductGallery } from "./ModernProductGallery";
+export { default as ProductInfoTabs } from "./ProductInfoTabs";

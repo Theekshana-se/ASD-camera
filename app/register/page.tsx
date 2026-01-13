@@ -58,6 +58,7 @@ const RegisterPage = () => {
 
     setIsSubmitting(true);
     try {
+      console.log("Attempting registration...");
       // sending API request for registering user
       const res = await fetch("/api/register", {
         method: "POST",
@@ -70,12 +71,16 @@ const RegisterPage = () => {
         }),
       });
 
+      console.log("Registration response status:", res.status);
       const data = await res.json();
+      console.log("Registration response data:", data);
 
       if (res.ok) {
         setError("");
-        toast.success("Registration successful");
-        router.push("/login");
+        toast.success("Registration successful! Redirecting to login...");
+        setTimeout(() => {
+          router.push("/login");
+        }, 1000);
         // Keep loading true for transition
       } else {
         setIsSubmitting(false);
@@ -90,15 +95,16 @@ const RegisterPage = () => {
           setError(data.error);
           toast.error(data.error);
         } else {
-          setError("Registration failed");
-          toast.error("Registration failed");
+          setError("Registration failed. Please try again.");
+          toast.error("Registration failed. Please try again.");
         }
       }
     } catch (error) {
       setIsSubmitting(false);
-      toast.error("Error, try again");
-      setError("Error, try again");
-      console.log(error);
+      console.error("Registration error details:", error);
+      const errorMsg = error instanceof Error ? error.message : "Network error. Please check your connection.";
+      toast.error(errorMsg);
+      setError(errorMsg);
     }
   };
 

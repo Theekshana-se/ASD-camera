@@ -41,17 +41,24 @@ export default function PromotionsPage() {
   useEffect(() => {
     const fetchBanners = async () => {
       try {
+        console.log("Fetching banners from API...");
         // Fetch all banners from the API
         const res = await apiClient.get("/api/banners");
+        console.log("API Response status:", res.status);
+        
         if (res.ok) {
           const data = await res.json();
-          // Filter for active banners and optionally specific position if needed
-          // For now, we'll show all active banners sorted by order
+          console.log("Fetched banners data:", data);
+          
+          // Filter for active banners with position "promotion"
           const activeBanners = Array.isArray(data) 
-            ? data.filter((b: Banner) => b.active)
+            ? data.filter((b: Banner) => b.active && b.position === "promotion")
             : [];
           
+          console.log("Active promotion banners:", activeBanners);
           setBanners(activeBanners.sort((a, b) => a.order - b.order));
+        } else {
+          console.error("Failed to fetch banners, status:", res.status);
         }
       } catch (error) {
         console.error("Failed to fetch banners", error);
