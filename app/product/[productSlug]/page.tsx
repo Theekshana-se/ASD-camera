@@ -1,13 +1,13 @@
 import {
   StockAvailabillity,
   UrgencyText,
-  ProductTabs,
   SingleProductDynamicFields,
+  ModernProductGallery,
+  ProductInfoTabs,
 } from "@/components";
 import apiClient from "@/lib/api";
 import { getCachedProduct, getCachedProductImages } from "@/lib/cache";
 import Image from "next/image";
-import ProductGallery from "@/components/ProductGallery";
 import { notFound } from "next/navigation";
 import React from "react";
 import { FaSquareFacebook } from "react-icons/fa6";
@@ -86,10 +86,14 @@ const SingleProductPage = async ({ params }: SingleProductPageProps) => {
   return (
     <div className="bg-gradient-to-br from-[#F8F9FA] to-[#E8EAF0] min-h-screen">
       <div className="max-w-screen-2xl mx-auto">
-        <div className="flex justify-center gap-x-16 pt-10 max-lg:flex-col items-start gap-y-5 px-5">
-          <ProductGallery
-            main={getImageUrl(product?.mainImage)}
-            images={(Array.isArray(images) ? images : []).map((img: any) => getImageUrl(img?.image))}
+        <div className="grid md:grid-cols-2 gap-8 pt-10 px-5">
+          {/* Left: Modern Image Gallery */}
+          <ModernProductGallery
+            images={[
+              product?.mainImage,
+              ...(Array.isArray(images) ? images.map((img: any) => img?.image) : [])
+            ].filter(Boolean)}
+            productName={sanitize(product?.title)}
           />
           <div className="flex flex-col gap-y-7 text-[#1A1F2E] max-[500px]:text-center">
             <h1 className="text-3xl font-bold">{sanitize(product?.title)}</h1>
@@ -184,8 +188,9 @@ const SingleProductPage = async ({ params }: SingleProductPageProps) => {
             </div>
           </div>
         </div>
-        <div className="py-16">
-          <ProductTabs product={product} />
+        {/* Modern Tabbed Product Information */}
+        <div className="py-16 px-5">
+          <ProductInfoTabs product={product} />
         </div>
       </div>
     </div>

@@ -57,6 +57,8 @@ const RegisterPage = () => {
     }
 
     setIsSubmitting(true);
+    setError(""); // Clear previous errors
+    
     try {
       console.log("Attempting registration...");
       // sending API request for registering user
@@ -72,39 +74,56 @@ const RegisterPage = () => {
       });
 
       console.log("Registration response status:", res.status);
-      const data = await res.json();
-      console.log("Registration response data:", data);
-
+      
       if (res.ok) {
-        setError("");
-        toast.success("Registration successful! Redirecting to login...");
+        const data = await res.json();
+        console.log("Registration successful:", data);
+        toast.success("✅ Registration successful! Redirecting to login...");
         setTimeout(() => {
           router.push("/login");
-        }, 1000);
+        }, 1500);
         // Keep loading true for transition
       } else {
+        // Handle error responses
         setIsSubmitting(false);
-        // Handle different types of errors
-        if (data.details && Array.isArray(data.details)) {
-          // Validation errors
-          const errorMessage = data.details.map((err: any) => err.message).join(", ");
-          setError(errorMessage);
-          toast.error(errorMessage);
-        } else if (data.error) {
-          // General errors
-          setError(data.error);
-          toast.error(data.error);
-        } else {
-          setError("Registration failed. Please try again.");
-          toast.error("Registration failed. Please try again.");
+        
+        let errorMessage = "Registration failed. Please try again.";
+        
+        try {
+          const data = await res.json();
+          console.log("Registration error data:", data);
+          
+          // Handle different types of errors
+          if (data.details && Array.isArray(data.details)) {
+            // Validation errors
+            errorMessage = data.details.map((err: any) => err.message).join(", ");
+          } else if (data.error) {
+            // General errors
+            errorMessage = data.error;
+          } else if (data.message) {
+            errorMessage = data.message;
+          }
+        } catch (parseError) {
+          console.error("Error parsing response:", parseError);
+          if (res.status === 500) {
+            errorMessage = "Server error. Please try again later or contact support.";
+          } else if (res.status === 429) {
+            errorMessage = "Too many attempts. Please wait a few minutes and try again.";
+          } else if (res.status === 400) {
+            errorMessage = "Invalid registration data. Please check your information.";
+          }
         }
+        
+        setError(errorMessage);
+        toast.error(errorMessage);
       }
     } catch (error) {
       setIsSubmitting(false);
-      console.error("Registration error details:", error);
-      const errorMsg = error instanceof Error ? error.message : "Network error. Please check your connection.";
-      toast.error(errorMsg);
+      console.error("Registration network error:", error);
+      
+      const errorMsg = "Cannot connect to server. Please check your internet connection and try again.";
       setError(errorMsg);
+      toast.error(errorMsg);
     }
   };
 

@@ -59,9 +59,16 @@ export default function PromotionsPage() {
           setBanners(activeBanners.sort((a, b) => a.order - b.order));
         } else {
           console.error("Failed to fetch banners, status:", res.status);
+          
+          // Show user-friendly error
+          if (res.status === 500) {
+            console.error("Server error - backend may be starting up or having issues");
+          }
         }
       } catch (error) {
         console.error("Failed to fetch banners", error);
+        // Set empty array so page still renders
+        setBanners([]);
       } finally {
         setLoading(false);
       }
