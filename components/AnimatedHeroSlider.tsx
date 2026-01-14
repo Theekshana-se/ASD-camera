@@ -121,34 +121,33 @@ export default function AnimatedHeroSlider({ settings }: { settings?: any }) {
 
   return (
     <section className="relative min-h-[90vh] overflow-hidden flex items-center">
-      {/* Animated Blurred Background */}
+      {/* Full Background Image */}
       <AnimatePresence mode="wait">
         <motion.div
           key={`bg-${current.id}`}
-          initial={{ opacity: 0, scale: 1.1 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          transition={{ duration: 0.6, ease: "easeInOut" }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.5, ease: "easeInOut" }}
           className="absolute inset-0 z-0"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-[#F8F9FA] to-[#E8EAF0]" />
           {current.imageUrl.startsWith('data:image/') ? (
             <img
               src={current.imageUrl}
               alt="Background"
-              className="absolute inset-0 w-full h-full object-cover opacity-20 blur-3xl scale-110"
+              className="absolute inset-0 w-full h-full object-cover"
             />
           ) : (
             <Image
               src={current.imageUrl}
               alt="Background"
               fill
-              className="object-cover opacity-20 blur-3xl scale-110"
+              className="object-cover"
               priority={currentSlide === 0}
             />
           )}
-          {/* Overlay gradient */}
-          <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/70 to-transparent" />
+          {/* Dark overlay for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30" />
         </motion.div>
       </AnimatePresence>
 
@@ -194,10 +193,10 @@ export default function AnimatedHeroSlider({ settings }: { settings?: any }) {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: 0.1 }}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-white/60 backdrop-blur-sm border border-white/20 rounded-full shadow-lg"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full shadow-lg"
               >
                 <div className="w-2 h-2 bg-[#FF1F1F] rounded-full animate-pulse" />
-                <span className="text-sm text-[#4B5563] font-semibold uppercase tracking-wider">
+                <span className="text-sm text-white font-semibold uppercase tracking-wider">
                   {current.subtitle}
                 </span>
               </motion.div>
@@ -207,7 +206,7 @@ export default function AnimatedHeroSlider({ settings }: { settings?: any }) {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.15 }}
-                className="text-6xl lg:text-7xl font-bold text-[#1A1F2E] leading-[1.1] tracking-tight"
+                className="text-6xl lg:text-7xl font-bold text-white leading-[1.1] tracking-tight drop-shadow-2xl"
                 style={{ fontFamily: "var(--font-inter)" }}
               >
                 {current.title}
@@ -218,7 +217,7 @@ export default function AnimatedHeroSlider({ settings }: { settings?: any }) {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.2 }}
-                className="text-xl text-[#4B5563] leading-relaxed max-w-xl max-lg:mx-auto"
+                className="text-xl text-gray-200 leading-relaxed max-w-xl max-lg:mx-auto drop-shadow-lg"
               >
                 {current.description}
               </motion.p>
@@ -285,76 +284,7 @@ export default function AnimatedHeroSlider({ settings }: { settings?: any }) {
             </motion.div>
           </AnimatePresence>
 
-          {/* Right: Instant Image Transition with Blur Effect */}
-          <div className="relative flex items-center justify-center max-lg:mt-12">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={`image-${current.id}`}
-                initial={{ opacity: 0, scale: 0.9, rotateY: -15 }}
-                animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-                exit={{ opacity: 0, scale: 1.1, rotateY: 15 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-                className="relative z-10"
-              >
-                {/* Floating Product */}
-                <motion.div
-                  animate={{
-                    y: [-10, 10, -10],
-                  }}
-                  transition={{
-                    duration: 6,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                  className="relative"
-                >
-                  <div className="relative w-full max-w-lg aspect-square">
-                    {current.imageUrl.startsWith('data:image/') ? (
-                      <img
-                        src={current.imageUrl}
-                        alt={current.title}
-                        className="w-full h-full object-contain drop-shadow-2xl"
-                      />
-                    ) : (
-                      <Image
-                        src={current.imageUrl}
-                        alt={current.title}
-                        fill
-                        className="object-contain drop-shadow-2xl"
-                        priority={currentSlide === 0}
-                      />
-                    )}
-                  </div>
-                </motion.div>
-              </motion.div>
-            </AnimatePresence>
-
-            {/* Pulsing Glow Behind Product */}
-            <motion.div
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-red-500/20 rounded-full blur-[100px]"
-              animate={{
-                scale: [1, 1.3, 1],
-                opacity: [0.2, 0.4, 0.2],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            />
-
-            {/* Decorative Circles */}
-            <motion.div
-              className="absolute top-20 right-20 w-32 h-32 border border-white/20 rounded-full"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-            />
-            <motion.div
-              className="absolute bottom-20 left-20 w-24 h-24 border border-red-500/30 rounded-full"
-              animate={{ rotate: -360 }}
-              transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-            />
-          </div>
+          {/* Right side removed - using only blurred background */}
         </div>
       </div>
 
