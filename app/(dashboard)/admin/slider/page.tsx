@@ -287,11 +287,10 @@ const AdminSliderPage = () => {
                         {/* Image Preview */}
                         {(editForm.imageUrl || imagePreview) && (
                           <div className="relative w-full h-48 bg-gray-800 rounded-xl overflow-hidden">
-                            <Image
+                            <img
                               src={editForm.imageUrl || imagePreview || ""}
                               alt="Preview"
-                              fill
-                              className="object-cover"
+                              className="w-full h-full object-cover"
                             />
                           </div>
                         )}
@@ -407,11 +406,10 @@ const AdminSliderPage = () => {
                         {/* Image Preview */}
                         {editForm.imageUrl && (
                           <div className="relative w-full h-48 bg-gray-800 rounded-xl overflow-hidden">
-                            <Image
+                            <img
                               src={editForm.imageUrl}
                               alt="Preview"
-                              fill
-                              className="object-cover"
+                              className="w-full h-full object-cover"
                             />
                           </div>
                         )}
@@ -466,11 +464,10 @@ const AdminSliderPage = () => {
                       {/* Image Preview */}
                       <div className="relative w-48 h-32 bg-gray-800 rounded-xl overflow-hidden flex-shrink-0">
                         {slide.imageUrl && (
-                          <Image
+                          <img
                             src={slide.imageUrl}
                             alt={slide.title || "Slide"}
-                            fill
-                            className="object-cover"
+                            className="w-full h-full object-cover"
                           />
                         )}
                       </div>

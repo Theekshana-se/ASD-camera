@@ -132,13 +132,21 @@ export default function AnimatedHeroSlider({ settings }: { settings?: any }) {
           className="absolute inset-0 z-0"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-[#F8F9FA] to-[#E8EAF0]" />
-          <Image
-            src={current.imageUrl}
-            alt="Background"
-            fill
-            className="object-cover opacity-20 blur-3xl scale-110"
-            priority={currentSlide === 0}
-          />
+          {current.imageUrl.startsWith('data:image/') ? (
+            <img
+              src={current.imageUrl}
+              alt="Background"
+              className="absolute inset-0 w-full h-full object-cover opacity-20 blur-3xl scale-110"
+            />
+          ) : (
+            <Image
+              src={current.imageUrl}
+              alt="Background"
+              fill
+              className="object-cover opacity-20 blur-3xl scale-110"
+              priority={currentSlide === 0}
+            />
+          )}
           {/* Overlay gradient */}
           <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/70 to-transparent" />
         </motion.div>
@@ -301,13 +309,21 @@ export default function AnimatedHeroSlider({ settings }: { settings?: any }) {
                   className="relative"
                 >
                   <div className="relative w-full max-w-lg aspect-square">
-                    <Image
-                      src={current.imageUrl}
-                      alt={current.title}
-                      fill
-                      className="object-contain drop-shadow-2xl"
-                      priority={currentSlide === 0}
-                    />
+                    {current.imageUrl.startsWith('data:image/') ? (
+                      <img
+                        src={current.imageUrl}
+                        alt={current.title}
+                        className="w-full h-full object-contain drop-shadow-2xl"
+                      />
+                    ) : (
+                      <Image
+                        src={current.imageUrl}
+                        alt={current.title}
+                        fill
+                        className="object-contain drop-shadow-2xl"
+                        priority={currentSlide === 0}
+                      />
+                    )}
                   </div>
                 </motion.div>
               </motion.div>
