@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { DashboardSidebar, AdminHeader } from "@/components";
 import apiClient from "@/lib/api";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaImage, FaPlus, FaTrash, FaPen, FaCheck, FaXmark, FaArrowUp, FaArrowDown } from "react-icons/fa6";
+import { FaImage, FaPlus, FaTrash, FaPen, FaCheck, FaXmark, FaArrowUp, FaArrowDown, FaUpload, FaSpinner } from "react-icons/fa6";
 import toast from "react-hot-toast";
 import Image from "next/image";
 
@@ -24,6 +24,8 @@ const AdminSliderPage = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<SliderItem>>({});
   const [showAddForm, setShowAddForm] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const loadSlides = async () => {
     setLoading(true);
@@ -85,7 +87,7 @@ const AdminSliderPage = () => {
 
   const handleToggleActive = async (id: string, active: boolean) => {
     try {
-      await fetch(`/server/api/slider/${id}`, {
+      await fetch(`/api/slider/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ active: !active }),
@@ -111,7 +113,7 @@ const AdminSliderPage = () => {
     try {
       await Promise.all(
         newSlides.map((slide, idx) =>
-          fetch(`/server/api/slider/${slide.id}`, {
+          fetch(`/api/slider/${slide.id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ order: idx }),
@@ -141,6 +143,47 @@ const AdminSliderPage = () => {
       order: slides.length,
       active: true,
     });
+  };
+
+  const handleImageUpload = async (file: File) => {
+    if (!file) return;
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image file');
+      return;
+    }
+    
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image must be less than 5MB');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/slider/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error('Upload failed');
+      
+      const data = await response.json();
+      const imageUrl = data.url;
+      
+      setEditForm({ ...editForm, imageUrl });
+      setImagePreview(imageUrl);
+      toast.success('Image uploaded successfully!');
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast.error('Failed to upload image');
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -214,13 +257,57 @@ const AdminSliderPage = () => {
                         />
                       </div>
 
-                      <input
-                        type="text"
-                        placeholder="Image URL"
-                        value={editForm.imageUrl || ""}
-                        onChange={(e) => setEditForm({ ...editForm, imageUrl: e.target.value })}
-                        className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50"
-                      />
+                      {/* Image Upload Section */}
+                      <div className="space-y-3">
+                        <label className="block text-sm font-medium text-gray-400">Slide Image</label>
+                        
+                        {/* Upload Button */}
+                        <label className="flex items-center justify-center gap-3 px-4 py-8 bg-gray-800/50 border-2 border-dashed border-gray-700 rounded-xl cursor-pointer hover:border-blue-500/50 hover:bg-gray-800/70 transition-all">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleImageUpload(file);
+                            }}
+                            disabled={uploading}
+                          />
+                          {uploading ? (
+                            <>
+                              <FaSpinner className="text-blue-400 text-xl animate-spin" />
+                              <span className="text-gray-400">Uploading...</span>
+                            </>
+                          ) : (
+                            <>
+                              <FaUpload className="text-gray-500 text-xl" />
+                              <span className="text-gray-400">Click to upload image</span>
+                              <span className="text-gray-600 text-sm">(Max 5MB)</span>
+                            </>
+                          )}
+                        </label>
+
+                        {/* Image Preview */}
+                        {(editForm.imageUrl || imagePreview) && (
+                          <div className="relative w-full h-48 bg-gray-800 rounded-xl overflow-hidden">
+                            <Image
+                              src={editForm.imageUrl || imagePreview || ""}
+                              alt="Preview"
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                        )}
+
+                        {/* Manual URL Input */}
+                        <input
+                          type="text"
+                          placeholder="Or paste image URL"
+                          value={editForm.imageUrl || ""}
+                          onChange={(e) => setEditForm({ ...editForm, imageUrl: e.target.value })}
+                          className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50"
+                        />
+                      </div>
 
                       <div className="grid grid-cols-2 gap-4">
                         <input
@@ -290,13 +377,57 @@ const AdminSliderPage = () => {
                         />
                       </div>
 
-                      <input
-                        type="text"
-                        placeholder="Image URL"
-                        value={editForm.imageUrl || ""}
-                        onChange={(e) => setEditForm({ ...editForm, imageUrl: e.target.value })}
-                        className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50"
-                      />
+                      {/* Image Upload Section */}
+                      <div className="space-y-3">
+                        <label className="block text-sm font-medium text-gray-400">Slide Image</label>
+                        
+                        {/* Upload Button */}
+                        <label className="flex items-center justify-center gap-3 px-4 py-8 bg-gray-800/50 border-2 border-dashed border-gray-700 rounded-xl cursor-pointer hover:border-blue-500/50 hover:bg-gray-800/70 transition-all">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleImageUpload(file);
+                            }}
+                            disabled={uploading}
+                          />
+                          {uploading ? (
+                            <>
+                              <FaSpinner className="text-blue-400 text-xl animate-spin" />
+                              <span className="text-gray-400">Uploading...</span>
+                            </>
+                          ) : (
+                            <>
+                              <FaUpload className="text-gray-500 text-xl" />
+                              <span className="text-gray-400">Click to upload image</span>
+                              <span className="text-gray-600 text-sm">(Max 5MB)</span>
+                            </>
+                          )}
+                        </label>
+
+                        {/* Image Preview */}
+                        {editForm.imageUrl && (
+                          <div className="relative w-full h-48 bg-gray-800 rounded-xl overflow-hidden">
+                            <Image
+                              src={editForm.imageUrl}
+                              alt="Preview"
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                        )}
+
+                        {/* Manual URL Input */}
+                        <input
+                          type="text"
+                          placeholder="Or paste image URL"
+                          value={editForm.imageUrl || ""}
+                          onChange={(e) => setEditForm({ ...editForm, imageUrl: e.target.value })}
+                          className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50"
+                        />
+                      </div>
 
                       <div className="grid grid-cols-2 gap-4">
                         <input
