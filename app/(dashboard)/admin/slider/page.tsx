@@ -162,26 +162,23 @@ const AdminSliderPage = () => {
 
     setUploading(true);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const response = await fetch('/api/slider/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) throw new Error('Upload failed');
-      
-      const data = await response.json();
-      const imageUrl = data.url;
-      
-      setEditForm({ ...editForm, imageUrl });
-      setImagePreview(imageUrl);
-      toast.success('Image uploaded successfully!');
+      // Convert image to base64
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setEditForm({ ...editForm, imageUrl: base64String });
+        setImagePreview(base64String);
+        toast.success('Image loaded successfully!');
+        setUploading(false);
+      };
+      reader.onerror = () => {
+        toast.error('Failed to read image');
+        setUploading(false);
+      };
+      reader.readAsDataURL(file);
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error('Failed to upload image');
-    } finally {
+      toast.error('Failed to process image');
       setUploading(false);
     }
   };
