@@ -10,19 +10,29 @@ const listSliderItems = asyncHandler(async (req, res) => {
 });
 
 function isSafeUrl(u) {
-  return typeof u === "string" && /^https:\/\//i.test(u);
+  // Accept relative URLs (starting with /) or absolute HTTPS URLs
+  return typeof u === "string" && (u.startsWith("/") || /^https?:\/\//i.test(u));
 }
 
 const createSliderItem = asyncHandler(async (req, res) => {
   const { title, subtitle, imageUrl, ctaText, ctaHref, order, active } = req.body || {};
   if (!imageUrl) throw new AppError("imageUrl is required", 400);
+
+  // Validate that imageUrl is either a base64 data URL or a regular URL
+  const isBase64 = imageUrl.startsWith('data:image/');
+  const isValidUrl = imageUrl.startsWith('/') || imageUrl.startsWith('http');
+
+  if (!isBase64 && !isValidUrl) {
+    throw new AppError("imageUrl must be a valid URL or base64 data URL", 400);
+  }
+
   const item = await prisma.sliderItem.create({
     data: {
       title: title || null,
       subtitle: subtitle || null,
       imageUrl,
       ctaText: ctaText || null,
-      ctaHref: ctaHref && isSafeUrl(ctaHref) ? ctaHref : null,
+      ctaHref: ctaHref || null, // Accept any URL format
       order: Number(order) || 0,
       active: active !== undefined ? !!active : true,
     },
@@ -41,7 +51,7 @@ const updateSliderItem = asyncHandler(async (req, res) => {
       subtitle: subtitle ?? undefined,
       imageUrl: imageUrl ?? undefined,
       ctaText: ctaText ?? undefined,
-      ctaHref: ctaHref === undefined ? undefined : (ctaHref && isSafeUrl(ctaHref) ? ctaHref : null),
+      ctaHref: ctaHref ?? undefined, // Accept any URL format
       order: order !== undefined ? Number(order) : undefined,
       active: active !== undefined ? !!active : undefined,
     },
