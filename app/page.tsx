@@ -8,7 +8,7 @@ import {
   BrandsCarousel,
 } from "@/components";
 import ScrollReveal from "@/components/ScrollReveal";
-import HeroSection from "@/components/HeroSection";
+import AnimatedHeroSlider from "@/components/AnimatedHeroSlider";
 import React from "react";
 import { getSiteSettings } from "@/lib/site-settings";
 
@@ -27,7 +27,7 @@ export default async function Home() {
   return (
     <>
     <ScrollReveal />
-    <HeroSection settings={settings} />
+    <AnimatedHeroSlider settings={settings} />
     <IntroducingSection />
     <OurServicesSection />
     <HotDealsSection />
