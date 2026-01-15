@@ -1,13 +1,12 @@
-import config from "@/lib/config";
+import { unstable_cache } from "next/cache";
+import prisma from "@/utils/db";
 
-export async function getSiteSettings() {
-  const res = await fetch(`${config.apiBaseUrl}/api/settings`, {
-    cache: "no-store",
-  });
+export const getSiteSettings = unstable_cache(async () => {
   try {
-    const data = await res.json();
-    return data || {};
-  } catch {
-    return {} as any;
+    const settings = await prisma.siteSettings.findFirst();
+    return settings || {};
+  } catch (error) {
+    // console.error("Error fetching site settings:", error);
+    return {};
   }
-}
+}, ["site-settings"], { revalidate: 300 });

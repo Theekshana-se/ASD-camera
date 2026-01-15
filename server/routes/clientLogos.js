@@ -6,8 +6,10 @@ const {
   createClientLogo,
   updateClientLogo,
   deleteClientLogo,
+  uploadClientLogoImage
 } = require("../controllers/clientLogos");
 
+router.post("/upload", uploadClientLogoImage);
 router.route("/").get(listClientLogos).post(createClientLogo);
 router.route("/:id").put(updateClientLogo).delete(deleteClientLogo);
 

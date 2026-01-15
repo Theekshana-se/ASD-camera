@@ -13,19 +13,22 @@ import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import HeaderTop from "./HeaderTop";
 import Image from "next/image";
-import SearchInput from "./SearchInput";
+import dynamic from "next/dynamic";
 import Link from "next/link";
+import MagneticLink from "./MagneticLink";
 
-import CartElement from "./CartElement";
-import NotificationBell from "./NotificationBell";
-import HeartElement from "./HeartElement";
+const SearchInput = dynamic(() => import("./SearchInput"), { ssr: false, loading: () => <div className="h-10 bg-gray-100 rounded w-full" /> });
+const CartElement = dynamic(() => import("./CartElement"), { ssr: false, loading: () => <div className="w-8 h-8 rounded bg-gray-100" /> });
+const NotificationBell = dynamic(() => import("./NotificationBell"), { ssr: false, loading: () => <div className="w-8 h-8 rounded bg-gray-100" /> });
+const HeartElement = dynamic(() => import("./HeartElement"), { ssr: false, loading: () => <div className="w-8 h-8 rounded bg-gray-100" /> });
 import { signOut, useSession } from "next-auth/react";
 import toast from "react-hot-toast";
 import { useWishlistStore } from "@/app/_zustand/wishlistStore";
+import { useProductStore } from "@/app/_zustand/store";
 import apiClient from "@/lib/api";
 import { categoryMenuList } from "@/lib/utils";
 import { FaBars } from "react-icons/fa6";
-import { CategoryMegaMenu } from ".";
+const CategoryMegaMenu = dynamic(() => import("./CategoryMegaMenu"), { ssr: false, loading: () => <div className="h-12 border-t border-gray-200 bg-white" /> });
 
 type Settings = {
   logoUrl?: string;
@@ -101,14 +104,13 @@ const Header = ({
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "About Us", href: "/about" },
-    { name: "Blog", href: "/blog" },
     { name: "Our Clients", href: "/clients" },
     { name: "Promotions", href: "/promotions" },
     { name: "Contact Us", href: "/contact" },
   ];
 
   return (
-    <header className={`bg-white/90 backdrop-blur sticky top-0 z-50 transition-transform duration-200 ${hideHeader ? "-translate-y-full" : "translate-y-0"}`}>
+    <header className={`bg-white/95 backdrop-blur border-b border-[#E5E7EB] sticky top-0 z-50 transition-transform duration-200 ${hideHeader ? "-translate-y-full" : "translate-y-0"}`}>
       <HeaderTop
         noticeBarEnabled={settings?.noticeBarEnabled}
         noticeBarText={settings?.noticeBarText}
@@ -137,15 +139,15 @@ const Header = ({
                 className="h-12 w-auto object-contain"
               />
             </Link>
-            <div className="hidden lg:flex flex-1 items-center justify-end text-black/80">
+            <div className="hidden lg:flex flex-1 items-center justify-end text-[#1A1F2E]">
               <div className="flex items-center gap-x-3 font-semibold">
-                <span className="flex items-center rounded-full bg-red-50 px-3 py-1 text-red-700 ring-1 ring-red-200 transition hover:scale-[1.02]">24/7 Hotline</span>
+                <span className="flex items-center rounded-full bg-[#FF1F1F]/10 px-3 py-1 text-[#FF1F1F] ring-1 ring-[#FF1F1F]/20 transition hover:scale-[1.02]">24/7 Hotline</span>
                 <span>{settings?.contactPhone || "+94 11 7253 111"}</span>
               </div>
             </div>
 
             <button
-              className="lg:hidden p-2 rounded-full bg-red-600 text-white shadow"
+              className="lg:hidden p-2 rounded-full bg-[#FF1F1F] text-white shadow"
               aria-label="Open menu"
               onClick={() => setMobileOpen((v) => !v)}
             >
@@ -158,20 +160,20 @@ const Header = ({
               <CartElement />
               {!session && (
                 <div className="hidden md:flex items-center gap-x-3">
-                  <Link href="/login" prefetch className="text-sm font-semibold hover:text-red-600 transition">Login</Link>
-                  <Link href="/register" prefetch className="text-sm font-semibold hover:text-red-600 transition">Register</Link>
+                  <Link href="/login" prefetch className="text-sm font-semibold text-[#1A1F2E] hover:text-[#FF1F1F] transition">Login</Link>
+                  <Link href="/register" prefetch className="text-sm font-semibold text-[#1A1F2E] hover:text-[#FF1F1F] transition">Register</Link>
                 </div>
               )}
               {session && (
                 <div className="hidden md:flex items-center gap-x-3">
-                  <button onClick={handleLogout} className="text-sm font-semibold hover:text-red-600 transition">Logout</button>
+                  <button onClick={handleLogout} className="text-sm font-semibold text-[#1A1F2E] hover:text-[#FF1F1F] transition">Logout</button>
                 </div>
               )}
               {(session?.user as any)?.role === "admin" && (
                 <Link
                   href="/admin"
                   prefetch
-                  className="px-3 py-1 rounded bg-red-600 text-white text-sm hover:bg-red-700"
+                  className="px-3 py-1 rounded bg-[#FF1F1F] text-white text-sm hover:bg-red-700"
                 >
                   Admin
                 </Link>
@@ -179,7 +181,7 @@ const Header = ({
             </div>
           </div>
           {mobileOpen && (
-            <div className="lg:hidden border-t border-gray-200 py-2">
+            <div className="lg:hidden border-t border-[#E5E7EB] py-2">
               <div className="flex flex-wrap gap-2 justify-center px-2">
                 {navLinks.map((l) => (
                   <Link
@@ -189,8 +191,8 @@ const Header = ({
                     onClick={() => setMobileOpen(false)}
                     className={`px-4 py-2 rounded-full text-base font-semibold transition-all ${
                       pathname === l.href
-                        ? "bg-red-600 text-white shadow"
-                        : "bg-white text-black hover:text-red-600"
+                        ? "bg-[#FF1F1F] text-white shadow"
+                        : "bg-[#F3F4F6] text-[#1A1F2E] hover:text-[#FF1F1F]"
                     }`}
                   >
                     {l.name}
@@ -203,18 +205,17 @@ const Header = ({
             <div className="flex items-center gap-6">
               <nav className="hidden lg:flex items-center gap-x-3 flex-1">
                 {navLinks.map((l) => (
-                  <Link
+                  <MagneticLink
                     key={l.href}
                     href={l.href}
-                    prefetch
                     className={`px-4 py-2 rounded-full text-base font-semibold transition-all ${
                       pathname === l.href
-                        ? "bg-red-600 text-white shadow"
-                        : "bg-white text-black hover:text-red-600 ring-1 ring-black/10"
+                        ? "bg-[#FF1F1F] text-white shadow"
+                        : "bg-[#F3F4F6] text-[#1A1F2E] hover:text-[#FF1F1F] ring-1 ring-[#E5E7EB]"
                     }`}
                   >
                     {l.name}
-                  </Link>
+                  </MagneticLink>
                 ))}
               </nav>
               <div className="w-full lg:w-[480px] ml-auto">

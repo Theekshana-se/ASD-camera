@@ -1,5 +1,5 @@
 "use client";
-import { CustomButton, SectionTitle } from "@/components";
+import { CustomButton, SectionTitle, SmartButton } from "@/components";
 import { isValidEmailAddressFormat } from "@/lib/utils";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -11,6 +11,7 @@ const LoginPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { data: session, status: sessionStatus } = useSession();
 
   useEffect(() => {
@@ -27,10 +28,11 @@ const LoginPage = () => {
     }
   }, [sessionStatus, router, searchParams]);
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const email = e.target[0].value;
-    const password = e.target[1].value;
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
 
     if (!isValidEmailAddressFormat(email)) {
       setError("Email is invalid");
@@ -44,19 +46,28 @@ const LoginPage = () => {
       return;
     }
 
-    const res = await signIn("credentials", {
-      redirect: false,
-      email,
-      password,
-    });
+    setIsSubmitting(true);
+    try {
+      const res = await signIn("credentials", {
+        redirect: false,
+        email,
+        password,
+      });
 
-    if (res?.error) {
-      setError("Invalid email or password");
-      toast.error("Invalid email or password");
-      if (res?.url) router.replace("/");
-    } else {
-      setError("");
-      toast.success("Successful login");
+      if (res?.error) {
+        setError("Invalid email or password");
+        toast.error("Invalid email or password");
+        if (res?.url) router.replace("/");
+        setIsSubmitting(false);
+      } else {
+        setError("");
+        toast.success("Successful login");
+        router.push("/");
+        // Don't set submitting false here to keep loading state during redirect
+      }
+    } catch (error) {
+      setIsSubmitting(false);
+      toast.error("An error occurred");
     }
   };
 
@@ -64,22 +75,22 @@ const LoginPage = () => {
     return <h1>Loading...</h1>;
   }
   return (
-    <div className="bg-white">
+    <div className="bg-gradient-to-br from-[#F8F9FA] to-[#E8EAF0] min-h-screen">
       <SectionTitle title="Login" path="Home | Login" />
-      <div className="flex min-h-full flex-1 flex-col justify-center py-12 sm:px-6 lg:px-8 bg-white">
+      <div className="flex min-h-full flex-1 flex-col justify-center py-12 sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <h2 className="mt-6 text-center text-2xl font-normal leading-9 tracking-tight text-gray-900">
+          <h2 className="mt-6 text-center text-2xl font-bold leading-9 tracking-tight text-[#1A1F2E]">
             Sign in to your account
           </h2>
         </div>
 
         <div className="mt-5 sm:mx-auto sm:w-full sm:max-w-[480px]">
-          <div className="bg-white px-6 py-12 shadow sm:rounded-lg sm:px-12">
+          <div className="bg-white/80 backdrop-blur-sm border border-gray-200/50 px-6 py-12 shadow-lg sm:rounded-lg sm:px-12">
             <form className="space-y-6" onSubmit={handleSubmit}>
               <div>
                 <label
                   htmlFor="email"
-                  className="block text-sm font-medium leading-6 text-gray-900"
+                  className="block text-sm font-medium leading-6 text-[#1A1F2E]"
                 >
                   Email address
                 </label>
@@ -90,7 +101,7 @@ const LoginPage = () => {
                     type="email"
                     autoComplete="email"
                     required
-                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-red-600 sm:text-sm sm:leading-6"
+                    className="block w-full rounded-md border-0 py-1.5 text-[#1A1F2E] shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#FF1F1F] sm:text-sm sm:leading-6"
                   />
                 </div>
               </div>
@@ -98,7 +109,7 @@ const LoginPage = () => {
               <div>
                 <label
                   htmlFor="password"
-                  className="block text-sm font-medium leading-6 text-gray-900"
+                  className="block text-sm font-medium leading-6 text-[#1A1F2E]"
                 >
                   Password
                 </label>
@@ -109,7 +120,7 @@ const LoginPage = () => {
                     type="password"
                     autoComplete="current-password"
                     required
-                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-red-600 sm:text-sm sm:leading-6"
+                    className="block w-full rounded-md border-0 py-1.5 text-[#1A1F2E] shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-[#FF1F1F] sm:text-sm sm:leading-6"
                   />
                 </div>
               </div>
@@ -120,11 +131,11 @@ const LoginPage = () => {
                     id="remember-me"
                     name="remember-me"
                     type="checkbox"
-                    className="h-4 w-4 rounded border-gray-300 text-black focus:ring-black"
+                    className="h-4 w-4 rounded border-gray-300 text-[#FF1F1F] focus:ring-[#FF1F1F]"
                   />
                   <label
                     htmlFor="remember-me"
-                    className="ml-3 block text-sm leading-6 text-gray-900"
+                    className="ml-3 block text-sm leading-6 text-[#4B5563]"
                   >
                     Remember me
                   </label>
@@ -133,7 +144,7 @@ const LoginPage = () => {
                 <div className="text-sm leading-6">
                   <a
                     href="#"
-                    className="font-semibold text-black hover:text-black"
+                    className="font-semibold text-[#FF1F1F] hover:text-[#1A1F2E] transition-colors"
                   >
                     Forgot password?
                   </a>
@@ -158,10 +169,10 @@ const LoginPage = () => {
                   className="absolute inset-0 flex items-center"
                   aria-hidden="true"
                 >
-                  <div className="w-full border-t border-gray-200" />
+                  <div className="w-full border-t border-gray-200/50" />
                 </div>
                 <div className="relative flex justify-center text-sm font-medium leading-6">
-                  <span className="bg-white px-6 text-gray-900">
+                  <span className="bg-white/80 px-6 text-[#4B5563]">
                     Or continue with
                   </span>
                 </div>

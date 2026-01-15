@@ -1,7 +1,9 @@
+"use client";
 import Heading from "./Heading";
 import Link from "next/link";
 import apiClient from "@/lib/api";
 import { sanitize } from "@/lib/sanitize";
+import React from "react";
 
 interface BrandSummary {
   name: string;
@@ -9,26 +11,57 @@ interface BrandSummary {
   productCount: number;
 }
 
-const BrandsShowcase = async () => {
-  let brands: BrandSummary[] = [];
+const BrandsShowcase = () => {
+  const [brands, setBrands] = React.useState<BrandSummary[]>([]);
+  const [loading, setLoading] = React.useState(true);
 
-  try {
-    const response = await apiClient.get("/api/brands", {
-      next: { revalidate: 120 },
-    });
+  React.useEffect(() => {
+    let active = true;
+    const load = async () => {
+      setLoading(true);
+      try {
+        const response = await apiClient.get("/api/brands");
 
-    if (response.ok) {
-      const data = await response.json();
-      brands = Array.isArray(data)
-        ? data.filter((brand: BrandSummary) => Boolean(brand?.name))
-        : [];
-    }
-  } catch (error) {
-    console.error("Failed to fetch brands", error);
-  }
+        if (response.ok) {
+          const data = await response.json();
+          const arr = Array.isArray(data)
+            ? data.filter((brand: BrandSummary) => Boolean(brand?.name))
+            : [];
+          if (active) setBrands(arr);
+        } else {
+          if (active) setBrands([]);
+        }
+      } catch (error) {
+        if (active) setBrands([]);
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+    load();
+    return () => { active = false; };
+  }, []);
 
   if (!brands.length) {
-    return null;
+    return (
+      <section className="bg-white border-t border-gray-100">
+        <div className="max-w-screen-2xl mx-auto py-20 px-10 max-sm:px-5">
+          <div data-reveal="up">
+            <Heading title="RENT BY BRAND" />
+          </div>
+          <div
+            data-reveal="up"
+            data-reveal-delay="150"
+            className="mt-10 grid grid-cols-5 gap-5 max-xl:grid-cols-4 max-lg:grid-cols-3 max-sm:grid-cols-2 max-[500px]:grid-cols-1"
+          >
+            {loading
+              ? Array.from({ length: 10 }).map((_, i) => (
+                  <div key={i} className="h-24 w-full bg-gray-100 rounded animate-pulse" />
+                ))
+              : null}
+          </div>
+        </div>
+      </section>
+    );
   }
 
   return (
@@ -63,6 +96,7 @@ const BrandsShowcase = async () => {
 };
 
 export default BrandsShowcase;
+
 
 
 

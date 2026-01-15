@@ -90,11 +90,11 @@ const Filters = () => {
         const [categoryRes, brandRes] = await Promise.all([
           fetch(`${API_BASE_URL}/api/categories`, {
             signal: controller.signal,
-            cache: "no-store",
+            next: { revalidate: 300 } as any,
           }),
           fetch(`${API_BASE_URL}/api/brands`, {
             signal: controller.signal,
-            cache: "no-store",
+            next: { revalidate: 300 } as any,
           }),
         ]);
 

@@ -2,20 +2,28 @@ interface Product {
   id: string;
   slug: string;
   title: string;
+  name?: string; // Alternative name field used in ProductCard
   price: number;
+  rentalPrice?: number; // Price for rental items
   deposit: number;
   isOfferItem: boolean;
   isFeatured?: boolean;
   isHotDeal?: boolean;
-  rating: number;
+  isNew?: boolean;
+  rating?: number;
+  reviewCount?: number;
   discount?: number;
   description: string;
   mainImage: string;
+  imageUrl?: string; // Alternative image field used in ProductCard
   coverPhoto?: string;
   manufacturer: string;
+  brand?: string; // Brand name
   categoryId: string;
-  category: {name: string}?;
+  category: { name: string }?;
   inStock: number;
+  stock?: number; // Alternative stock field used in ProductCard
+  rentalPeriod?: string; // e.g., "day", "week", "month"
 }
 
 interface Merchant {

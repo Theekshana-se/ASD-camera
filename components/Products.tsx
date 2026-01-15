@@ -8,47 +8,42 @@
 // Output: products grid
 // *********************
 
+ "use client";
 import React from "react";
 import ProductCard from "./ProductCard";
 import apiClient from "@/lib/api";
 
-const Products = async ({
-  params,
-  searchParams,
-}: {
-  params: { slug?: string[] };
-  searchParams: { [key: string]: string | string[] | undefined };
-}) => {
+const Products = () => {
+  const searchParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
+  const pathname = typeof window !== "undefined" ? window.location.pathname : "/shop";
+  const segments = pathname.split("/").filter(Boolean);
+  const slugCategory = segments[0] === "shop" && segments[1]?.length ? segments[1] : undefined;
   // getting all data from URL slug and preparing everything for sending GET request
-  const inStockNum = searchParams?.inStock === "true" ? 1 : 0;
-  const outOfStockNum = searchParams?.outOfStock === "true" ? 1 : 0;
-  const page = searchParams?.page ? Number(searchParams?.page) : 1;
+  const inStockNum = searchParams.get("inStock") === "true" ? 1 : 0;
+  const outOfStockNum = searchParams.get("outOfStock") === "true" ? 1 : 0;
+  const page = searchParams.get("page") ? Number(searchParams.get("page")) : 1;
   const sortValue =
-    typeof searchParams?.sort === "string" && searchParams.sort.length > 0
-      ? searchParams.sort
+    typeof searchParams.get("sort") === "string" && (searchParams.get("sort") || "").length > 0
+      ? (searchParams.get("sort") as string)
       : "defaultSort";
-  const priceLimit = Number(searchParams?.price) || 999999;
-  const ratingThreshold = Number(searchParams?.rating) || 0;
+  const priceLimit = Number(searchParams.get("price")) || 999999;
+  const ratingThreshold = Number(searchParams.get("rating")) || 0;
   const brandFilterParam =
-    typeof searchParams?.brand === "string" &&
-    searchParams.brand.length > 0 &&
-    searchParams.brand !== "all"
-      ? searchParams.brand
+    typeof searchParams.get("brand") === "string" &&
+    (searchParams.get("brand") || "").length > 0 &&
+    searchParams.get("brand") !== "all"
+      ? (searchParams.get("brand") as string)
       : undefined;
   const categoryParamRaw =
-    typeof searchParams?.category === "string" &&
-    searchParams.category.length > 0
-      ? searchParams.category
+    typeof searchParams.get("category") === "string" &&
+    (searchParams.get("category") || "").length > 0
+      ? (searchParams.get("category") as string)
       : undefined;
   const categoryFromParams =
     categoryParamRaw && categoryParamRaw !== "all"
       ? categoryParamRaw
       : undefined;
   const shouldIgnoreSlug = categoryParamRaw === "all";
-  const slugCategory =
-    params?.slug && Array.isArray(params.slug) && params.slug.length > 0
-      ? params.slug[0]
-      : undefined;
   const activeCategory = shouldIgnoreSlug
     ? undefined
     : categoryFromParams || slugCategory;
@@ -67,51 +62,55 @@ const Products = async ({
     stockMode = null; // no stock filter by default
   }
 
-  let products = [];
+  const [products, setProducts] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
 
-  try {
-    // sending API request with filtering, sorting and pagination for getting all products
-    const queryParts: string[] = [
-      `filters[price][$lte]=${priceLimit}`,
-      `filters[rating][$gte]=${ratingThreshold}`,
-    ];
-    if (stockMode) {
-      queryParts.push(`filters[inStock][$${stockMode}]=1`);
-    }
+  React.useEffect(() => {
+    let active = true;
+    setLoading(true);
+    (async () => {
+      const queryParts: string[] = [
+        `filters[price][$lte]=${priceLimit}`,
+        `filters[rating][$gte]=${ratingThreshold}`,
+      ];
+      if (stockMode) {
+        queryParts.push(`filters[inStock][$${stockMode}]=1`);
+      }
 
-    if (activeCategory) {
-      queryParts.push(
-        `filters[category][$equals]=${encodeURIComponent(activeCategory)}`
-      );
-    }
+      if (activeCategory) {
+        queryParts.push(
+          `filters[category][$equals]=${encodeURIComponent(activeCategory)}`
+        );
+      }
 
-    if (brandFilterParam) {
-      queryParts.push(
-        `filters[manufacturer][$equals]=${encodeURIComponent(
-          brandFilterParam
-        )}`
-      );
-    }
+      if (brandFilterParam) {
+        queryParts.push(
+          `filters[manufacturer][$equals]=${encodeURIComponent(
+            brandFilterParam
+          )}`
+        );
+      }
 
-    queryParts.push(`sort=${encodeURIComponent(sortValue)}`);
-    queryParts.push(`page=${page}`);
+      queryParts.push(`sort=${encodeURIComponent(sortValue)}`);
+      queryParts.push(`page=${page}`);
 
-    const data = await apiClient.get(
-      `/api/products?${queryParts.join("&")}`,
-      { next: { revalidate: 30 } }
-    );
+      try {
+        const data = await apiClient.get(`/api/products?${queryParts.join("&")}`);
 
-    if (!data.ok) {
-      console.error('Failed to fetch products:', data.statusText);
-      products = [];
-    } else {
-      const result = await data.json();
-      products = Array.isArray(result) ? result : [];
-    }
-  } catch (error) {
-    console.error('Error fetching products:', error);
-    products = [];
-  }
+        if (!data.ok) {
+          if (active) setProducts([]);
+        } else {
+          const result = await data.json();
+          if (active) setProducts(Array.isArray(result) ? result : []);
+        }
+      } catch {
+        if (active) setProducts([]);
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+    return () => { active = false; };
+  }, [inStockNum, outOfStockNum, page, sortValue, priceLimit, ratingThreshold, brandFilterParam, activeCategory]);
 
   return (
     <div className="grid grid-cols-3 justify-items-center gap-x-2 gap-y-5 max-[1300px]:grid-cols-3 max-lg:grid-cols-2 max-[500px]:grid-cols-1">
@@ -120,9 +119,19 @@ const Products = async ({
           <ProductCard key={product.id} product={product} />
         ))
       ) : (
-        <h3 className="text-3xl mt-5 text-center w-full col-span-full max-[1000px]:text-2xl max-[500px]:text-lg">
-          No products found for specified query
-        </h3>
+        <div className="col-span-full w-full">
+          {loading ? (
+            <div className="grid grid-cols-3 gap-4 max-lg:grid-cols-2 max-[500px]:grid-cols-1">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="h-48 w-full bg-gray-100 rounded animate-pulse" />
+              ))}
+            </div>
+          ) : (
+            <h3 className="text-3xl mt-5 text-center w-full col-span-full max-[1000px]:text-2xl max-[500px]:text-lg">
+              No products found for specified query
+            </h3>
+          )}
+        </div>
       )}
     </div>
   );

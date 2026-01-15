@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import { motion } from "framer-motion";
 import { FaTruck, FaLightbulb, FaHandHoldingDollar } from "react-icons/fa6";
 
 const items = [
@@ -25,28 +26,63 @@ const items = [
 
 export default function OurServicesSection() {
   return (
-    <section
-      className="relative py-16 bg-fixed bg-cover bg-center"
-      style={{ backgroundImage: "url(/pexels-lex-photography-1109543.jpg)" }}
-    >
-      <div className="absolute inset-0 bg-white/70" />
-      <div className="relative max-w-screen-2xl mx-auto px-4">
-        <div className="text-center mb-10">
-          <h2 data-reveal="up" className="text-3xl md:text-4xl font-bold text-neutral-900">Our Services</h2>
-          <div className="mx-auto mt-3 h-1 w-24 bg-red-600 rounded" />
-        </div>
+    <section className="relative py-24 bg-white border-y border-[#E5E7EB] overflow-hidden">
+      {/* Subtle Grid Pattern */}
+      <div className="absolute inset-0 opacity-[0.02]">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)`,
+            backgroundSize: "50px 50px",
+          }}
+        />
+      </div>
+
+      <div className="relative max-w-screen-2xl mx-auto px-10 max-sm:px-5">
+        {/* Section Header */}
+        <motion.div
+          initial={{ opacity: 0, x: -100 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="mb-16"
+        >
+          <div className="flex items-center gap-6">
+            <motion.div
+              initial={{ scaleX: 0 }}
+              whileInView={{ scaleX: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="h-px w-16 bg-gradient-to-r from-[#FF1F1F] to-transparent"
+            />
+            <h2 className="text-5xl lg:text-6xl font-bold text-[#1A1F2E] uppercase tracking-tight">
+              Our Services
+            </h2>
+          </div>
+        </motion.div>
+
+        {/* Services Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {items.map((it) => (
-            <div
+          {items.map((it, index) => (
+            <motion.div
               key={it.title}
-              className="group bg-white/90 backdrop-blur rounded-2xl shadow-lg p-6 border border-neutral-200 hover:shadow-xl hover:-translate-y-1 transition-all"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{
+                duration: 0.6,
+                delay: index * 0.1,
+                ease: "easeOut",
+              }}
+              whileHover={{ y: -8 }}
+              className="group bg-[#F8F9FA] border border-[#E5E7EB] hover:border-[#FF1F1F] rounded-lg p-8 transition-all duration-300"
             >
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-red-600 to-red-400 text-white flex items-center justify-center mb-4">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#FF1F1F] to-red-800 text-white flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                 {it.icon}
               </div>
-              <div className="font-semibold text-lg mb-2 text-neutral-900">{it.title}</div>
-              <p className="text-sm text-neutral-700 leading-relaxed">{it.desc}</p>
-            </div>
+              <div className="font-bold text-xl mb-3 text-[#1A1F2E]">{it.title}</div>
+              <p className="text-sm text-[#6B7280] leading-relaxed">{it.desc}</p>
+            </motion.div>
           ))}
         </div>
       </div>

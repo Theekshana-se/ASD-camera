@@ -14,13 +14,15 @@
 import React from "react";
 import { useProductStore } from "@/app/_zustand/store";
 import toast from "react-hot-toast";
-
-
+import SmartButton from "./SmartButton";
 
 const AddToCartSingleProductBtn = ({ product, quantityCount } : SingleProductBtnProps) => {
   const { addToCart, calculateTotals } = useProductStore();
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
+    // Artificial delay for better UX
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
     addToCart({
       id: product?.id.toString(),
       title: product?.title,
@@ -32,12 +34,13 @@ const AddToCartSingleProductBtn = ({ product, quantityCount } : SingleProductBtn
     toast.success("Product added to the cart");
   };
   return (
-    <button
+    <SmartButton
       onClick={handleAddToCart}
-      className="btn w-[200px] text-lg border border-gray-300 border-1 font-normal bg-white text-red-600 hover:bg-red-600 hover:text-white hover:border-red-700 hover:scale-110 transition-all uppercase ease-in max-[500px]:w-full"
+      className="w-[200px] text-lg uppercase max-[500px]:w-full bg-white text-red-600 border border-gray-300 hover:bg-red-600 hover:text-white hover:border-red-700"
+      variant="outline"
     >
       Add to cart
-    </button>
+    </SmartButton>
   );
 };
 

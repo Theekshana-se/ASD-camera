@@ -8,30 +8,14 @@
 // Output: Footer component
 // *********************
 
-"use client";
-import { navigation } from "@/lib/utils";
+import { navigation, getImageUrl } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { FaMapMarkerAlt, FaPhoneAlt, FaEnvelope, FaFacebookF, FaInstagram, FaGoogle } from "react-icons/fa";
-import apiClient from "@/lib/api";
 
 const Footer = ({ settings }: { settings?: any }) => {
-  const [current, setCurrent] = useState<any>(settings || {});
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await apiClient.get("/api/settings", { cache: "no-store" });
-        const data = await res.json();
-        setCurrent(data || {});
-      } catch {}
-    })();
-    const handler = (e: any) => {
-      setCurrent(e?.detail || current);
-    };
-    window.addEventListener('siteSettingsUpdated', handler as any);
-    return () => window.removeEventListener('siteSettingsUpdated', handler as any);
-  }, []);
+  const current = settings || {};
 
   const sale = Array.isArray(current?.footerSale) ? current.footerSale : navigation.sale;
   const about = Array.isArray(current?.footerAbout) ? current.footerAbout : navigation.about;
@@ -53,8 +37,9 @@ const Footer = ({ settings }: { settings?: any }) => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="space-y-4">
             <div className="flex items-center gap-4">
+              {logo && <Image src={logo} alt={title} width={40} height={40} className="object-contain" />}
               <h3 className="text-2xl font-semibold">
-                <span className="text-red-600">ASD</span> <span>Camera</span>
+                {title}
               </h3>
             </div>
             {desc && <p className="text-sm text-gray-700 max-w-md">{desc}</p>}
@@ -129,7 +114,7 @@ const Footer = ({ settings }: { settings?: any }) => {
                 {payments.map((pm: any, idx: number) => (
                   <div key={idx} className="h-12 w-full bg-white rounded shadow flex items-center justify-center p-2">
                     {pm?.imageUrl ? (
-                      <Image src={pm.imageUrl} alt={pm?.name || 'payment'} width={80} height={40} className="max-h-10 w-auto object-contain" />
+                      <Image src={getImageUrl(pm.imageUrl)} alt={pm?.name || 'payment'} width={80} height={40} className="max-h-10 w-auto object-contain" />
                     ) : (
                       <span className="text-xs text-gray-500">No image</span>
                     )}

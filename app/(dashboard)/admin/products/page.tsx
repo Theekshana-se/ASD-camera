@@ -1,14 +1,17 @@
 "use client";
-import { DashboardSidebar } from "@/components";
+import { DashboardSidebar, AdminHeader } from "@/components";
 import React from "react";
 import DashboardProductTable from "@/components/DashboardProductTable";
 
 const AdminProductsPage = () => {
   return (
-    <div className="bg-white flex justify-start max-w-screen-2xl mx-auto xl:h-full max-xl:flex-col max-xl:gap-y-5">
+    <div className="flex min-h-screen bg-gray-950">
       <DashboardSidebar />
-      <div className="flex-1 p-6">
-        <DashboardProductTable />
+      <div className="flex-1 flex flex-col">
+        <AdminHeader />
+        <main className="flex-1 p-8 overflow-auto">
+          <DashboardProductTable />
+        </main>
       </div>
     </div>
   );

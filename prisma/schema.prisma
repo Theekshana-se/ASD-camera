@@ -265,7 +265,7 @@ model SliderItem {
 
 model ClientLogo {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  imageUrl  String
+  imageUrl  String?
   alt       String?
   href      String?
   order     Int      @default(0)

@@ -6,37 +6,37 @@ import prisma from "@/utils/db";
 
 const providers: any[] = [
   CredentialsProvider({
-      id: "credentials",
-      name: "Credentials",
-      credentials: {
-        email: { label: "Email", type: "text" },
-        password: { label: "Password", type: "password" },
-      },
-      async authorize(credentials) {
-        try {
-          if (!credentials?.email || !credentials?.password) {
+    id: "credentials",
+    name: "Credentials",
+    credentials: {
+      email: { label: "Email", type: "text" },
+      password: { label: "Password", type: "password" },
+    },
+    async authorize(credentials) {
+      try {
+        if (!credentials?.email || !credentials?.password) {
+          return null;
+        }
+        const user = await prisma.user.findFirst({
+          where: { email: credentials.email },
+        });
+        if (user) {
+          if (!user.password) {
             return null;
           }
-          const user = await prisma.user.findFirst({
-            where: { email: credentials.email },
-          });
-          if (user) {
-            if (!user.password) {
-              return null;
-            }
-            const isPasswordCorrect = await bcrypt.compare(
-              credentials.password,
-              user.password
-            );
-            if (isPasswordCorrect) {
-              return { id: user.id, email: user.email, role: user.role } as any;
-            }
+          const isPasswordCorrect = await bcrypt.compare(
+            credentials.password,
+            user.password
+          );
+          if (isPasswordCorrect) {
+            return { id: user.id, email: user.email, role: user.role } as any;
           }
-        } catch (err: any) {
-          throw new Error(err);
         }
-        return null;
-      },
+      } catch (err: any) {
+        throw new Error(err);
+      }
+      return null;
+    },
   }),
 ];
 
@@ -74,19 +74,30 @@ export const authOptions = {
       }
       return true;
     },
-    async jwt({ token, user }: any) {
+    async jwt({ token, user, account }: any) {
+      // If user object exists (first time login), set role and id
       if (user) {
-        (token as any).role = (user as any).role;
-        (token as any).id = (user as any).id;
-        token.iat = Math.floor(Date.now() / 1000);
+        token.role = user.role;
+        token.id = user.id;
       }
-      const now = Math.floor(Date.now() / 1000);
-      const iat = (token.iat as number) ?? now;
-      const tokenAge = now - iat;
-      const maxAge = 15 * 60;
-      if (tokenAge > maxAge) {
-        return {} as any;
+
+      // If role is not set or user logged in via OAuth, fetch from database
+      if (!token.role || account?.provider === "google" || account?.provider === "github") {
+        try {
+          const dbUser = await prisma.user.findFirst({
+            where: { email: token.email },
+            select: { role: true, id: true }
+          });
+
+          if (dbUser) {
+            token.role = dbUser.role;
+            token.id = dbUser.id;
+          }
+        } catch (error) {
+          console.error("Error fetching user role:", error);
+        }
       }
+
       return token;
     },
     async session({ session, token }: any) {

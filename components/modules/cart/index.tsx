@@ -7,11 +7,14 @@ import Link from "next/link";
 import { FaCheck, FaCircleQuestion, FaClock, FaXmark } from "react-icons/fa6";
 import QuantityInputCart from "@/components/QuantityInputCart";
 import { sanitize } from "@/lib/sanitize";
+import SmartButton from "@/components/SmartButton";
+import { useRouter } from "next/navigation";
 
 export const CartModule = () => {
 
   const { products, removeFromCart, calculateTotals, total } =
     useProductStore();
+  const router = useRouter();
 
   const handleRemoveItem = (id: string) => {
     removeFromCart(id);
@@ -49,7 +52,7 @@ export const CartModule = () => {
                       <h3 className="text-sm">
                         <Link
                           href={`#`}
-                          className="font-medium text-gray-700 hover:text-gray-800"
+                          className="font-medium text-[#1A1F2E] hover:text-[#FF1F1F] transition-colors"
                         >
                           {sanitize(product.title)}
                         </Link>
@@ -61,13 +64,13 @@ export const CartModule = () => {
                           <p className="ml-4 border-l border-gray-200 pl-4 text-gray-500">{product.size}</p>
                         ) : null}
                       </div> */}
-                    <p className="mt-1 text-sm font-medium text-gray-900">
+                    <p className="mt-1 text-sm font-medium text-[#1A1F2E]">
                       ${product.price}
                     </p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-[#6B7280]">
                       Qty: {product.amount}
                     </p>
-                    <p className="mt-1 text-sm font-semibold text-gray-900">
+                    <p className="mt-1 text-sm font-semibold text-[#FF1F1F]">
                       Total rent: ${product.price * product.amount}
                     </p>
                   </div>
@@ -87,15 +90,15 @@ export const CartModule = () => {
                   </div>
                 </div>
 
-                <p className="mt-4 flex space-x-2 text-sm text-gray-700">
+                <p className="mt-4 flex space-x-2 text-sm text-[#4B5563]">
                   {1 ? (
                     <FaCheck
-                      className="h-5 w-5 flex-shrink-0 text-green-500"
+                      className="h-5 w-5 flex-shrink-0 text-green-600"
                       aria-hidden="true"
                     />
                   ) : (
                     <FaClock
-                      className="h-5 w-5 flex-shrink-0 text-gray-300"
+                      className="h-5 w-5 flex-shrink-0 text-gray-400"
                       aria-hidden="true"
                     />
                   )}
@@ -111,28 +114,28 @@ export const CartModule = () => {
       {/* Order summary */}
       <section
         aria-labelledby="summary-heading"
-        className="mt-16 rounded-lg bg-gray-50 px-4 py-6 sm:p-6 lg:col-span-5 lg:mt-0 lg:p-8"
+        className="mt-16 rounded-lg bg-white/80 backdrop-blur-sm border border-gray-200/50 px-4 py-6 sm:p-6 lg:col-span-5 lg:mt-0 lg:p-8 shadow-lg"
       >
         <h2
           id="summary-heading"
-          className="text-lg font-medium text-gray-900"
+          className="text-lg font-bold text-[#1A1F2E]"
         >
           Order summary
         </h2>
 
         <dl className="mt-6 space-y-4">
           <div className="flex items-center justify-between">
-            <dt className="text-sm text-gray-600">Total rent</dt>
-            <dd className="text-sm font-medium text-gray-900">
+            <dt className="text-sm text-[#6B7280]">Total rent</dt>
+            <dd className="text-sm font-medium text-[#1A1F2E]">
               ${total}
             </dd>
           </div>
-          <div className="flex items-center justify-between border-t border-gray-200 pt-4">
-            <dt className="flex items-center text-sm text-gray-600">
+          <div className="flex items-center justify-between border-t border-gray-200/50 pt-4">
+            <dt className="flex items-center text-sm text-[#6B7280]">
               <span>Shipping estimate</span>
               <a
                 href="#"
-                className="ml-2 flex-shrink-0 text-gray-400 hover:text-gray-500"
+                className="ml-2 flex-shrink-0 text-gray-400 hover:text-[#FF1F1F] transition-colors"
               >
                 <span className="sr-only">
                   Learn more about how shipping is calculated
@@ -143,14 +146,14 @@ export const CartModule = () => {
                 />
               </a>
             </dt>
-            <dd className="text-sm font-medium text-gray-900">$5.00</dd>
+            <dd className="text-sm font-medium text-[#1A1F2E]">$5.00</dd>
           </div>
-          <div className="flex items-center justify-between border-t border-gray-200 pt-4">
-            <dt className="flex text-sm text-gray-600">
+          <div className="flex items-center justify-between border-t border-gray-200/50 pt-4">
+            <dt className="flex text-sm text-[#6B7280]">
               <span>Tax estimate</span>
               <a
                 href="#"
-                className="ml-2 flex-shrink-0 text-gray-400 hover:text-gray-500"
+                className="ml-2 flex-shrink-0 text-gray-400 hover:text-[#FF1F1F] transition-colors"
               >
                 <span className="sr-only">
                   Learn more about how tax is calculated
@@ -161,27 +164,31 @@ export const CartModule = () => {
                 />
               </a>
             </dt>
-            <dd className="text-sm font-medium text-gray-900">
+            <dd className="text-sm font-medium text-[#1A1F2E]">
               ${total / 5}
             </dd>
           </div>
-          <div className="flex items-center justify-between border-t border-gray-200 pt-4">
-            <dt className="text-base font-medium text-gray-900">
+          <div className="flex items-center justify-between border-t border-gray-200/50 pt-4">
+            <dt className="text-base font-bold text-[#1A1F2E]">
               Order total
             </dt>
-            <dd className="text-base font-medium text-gray-900">
+            <dd className="text-base font-bold text-[#FF1F1F]">
               ${total === 0 ? 0 : Math.round(total + total / 5 + 5)}
             </dd>
           </div>
         </dl>
         {products.length > 0 && (
           <div className="mt-6">
-            <Link
-              href="/checkout"
-              className="block flex justify-center items-center w-full uppercase bg-white px-4 py-3 text-base border border-black border-gray-300 font-bold text-red-600 shadow-sm hover:bg-black hover:bg-gray-100 focus:outline-none focus:ring-2"
+            <SmartButton
+              onClick={async () => {
+                router.push("/checkout");
+                // Keep loading state during navigation
+                await new Promise(() => {});
+              }}
+              className="w-full uppercase bg-[#1A1F2E] text-white hover:bg-[#FF1F1F] transition-all duration-300 font-bold"
             >
-              <span>Checkout</span>
-            </Link>
+              Checkout
+            </SmartButton>
           </div>
         )}
       </section>
