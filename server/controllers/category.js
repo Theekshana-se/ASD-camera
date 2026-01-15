@@ -53,6 +53,7 @@ const updateCategory = asyncHandler(async (request, response) => {
 
 const deleteCategory = asyncHandler(async (request, response) => {
   const { id } = request.params;
+  console.log(`[DEBUG] Attempting to delete category: ${id}`);
 
   if (!id) {
     throw new AppError("Category ID is required", 400);
@@ -65,6 +66,7 @@ const deleteCategory = asyncHandler(async (request, response) => {
   });
 
   if (!existingCategory) {
+    console.log(`[DEBUG] Category not found: ${id}`);
     throw new AppError("Category not found", 404);
   }
 
@@ -76,14 +78,17 @@ const deleteCategory = asyncHandler(async (request, response) => {
   });
 
   if (productsWithCategory) {
+    console.log(`[DEBUG] Category has products, cannot delete: ${id}`);
     throw new AppError("Cannot delete category that has products", 400);
   }
 
+  console.log(`[DEBUG] Deleting category: ${id}`);
   await prisma.category.delete({
     where: {
       id: id,
     },
   });
+  console.log(`[DEBUG] Category deleted successfully: ${id}`);
   return response.status(204).send();
 });
 
@@ -99,11 +104,11 @@ const getCategory = asyncHandler(async (request, response) => {
       id: id,
     },
   });
-  
+
   if (!category) {
     throw new AppError("Category not found", 404);
   }
-  
+
   return response.status(200).json(category);
 });
 

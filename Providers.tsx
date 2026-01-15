@@ -27,6 +27,7 @@ const Providers = ({ children, settings }: { children: React.ReactNode; settings
   return (
     <SettingsContext.Provider value={value}>
       <Toaster
+        containerStyle={{ zIndex: 99999 }}
         toastOptions={{
           className: "",
           style: {

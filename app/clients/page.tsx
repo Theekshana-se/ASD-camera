@@ -35,7 +35,7 @@ type ClientLogo = {
 export default function ClientsPage() {
   const [logos, setLogos] = useState<ClientLogo[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   const heroImage = "/pexels-format-1029757.jpg";
   const infoRef = useRef(null);
   const logosRef = useRef(null);
@@ -45,7 +45,7 @@ export default function ClientsPage() {
   useEffect(() => {
     const fetchLogos = async () => {
       try {
-        const res = await apiClient.get("/api/client-logos");
+        const res = await apiClient.get(`/api/client-logos?t=${Date.now()}`, { cache: "no-store" });
         const data = await res.json();
         const activeLogos = (Array.isArray(data) ? data : [])
           .filter((logo: ClientLogo) => logo.active)
@@ -111,15 +111,15 @@ export default function ClientsPage() {
             className="object-cover"
           />
         </motion.div>
-        
+
         {/* Animated gradient overlay */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1 }}
-          className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/70 to-black/90" 
+          className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/70 to-black/90"
         />
-        
+
         {/* Floating particles effect */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {[...Array(20)].map((_, i) => (
@@ -142,10 +142,10 @@ export default function ClientsPage() {
             />
           ))}
         </div>
-        
+
         <div className="absolute inset-0">
           <div className="max-w-screen-2xl mx-auto h-full px-6 grid items-center justify-center text-center">
-            <motion.div 
+            <motion.div
               initial="hidden"
               animate="visible"
               variants={staggerContainer}
@@ -155,33 +155,33 @@ export default function ClientsPage() {
                 variants={fadeInUp}
                 className="inline-flex items-center gap-3 justify-center mb-2"
               >
-                <motion.span 
+                <motion.span
                   initial={{ scaleX: 0 }}
                   animate={{ scaleX: 1 }}
                   transition={{ duration: 0.6, delay: 0.5 }}
                   className="w-12 h-1 bg-red-500"
                 />
                 <span className="text-white/80 text-sm uppercase tracking-[0.2em] font-medium">Trusted Partners</span>
-                <motion.span 
+                <motion.span
                   initial={{ scaleX: 0 }}
                   animate={{ scaleX: 1 }}
                   transition={{ duration: 0.6, delay: 0.5 }}
                   className="w-12 h-1 bg-red-500"
                 />
               </motion.div>
-              
-              <motion.h1 
+
+              <motion.h1
                 variants={fadeInUp}
                 className="text-5xl md:text-6xl font-extrabold text-white leading-tight"
               >
                 Our <span className="text-red-500">Customers</span>
               </motion.h1>
-              
-              <motion.p 
+
+              <motion.p
                 variants={fadeInUp}
                 className="text-white/80 max-w-2xl text-lg leading-relaxed mx-auto"
               >
-                We're proud to partner with leading brands and organizations worldwide. 
+                We're proud to partner with leading brands and organizations worldwide.
                 Our commitment to excellence has earned the trust of industry leaders.
               </motion.p>
             </motion.div>
@@ -192,7 +192,7 @@ export default function ClientsPage() {
       {/* Stats Cards Section */}
       <section ref={infoRef} className="relative z-10 -mt-20 px-6 pb-24">
         <div className="max-w-screen-2xl mx-auto">
-          <motion.div 
+          <motion.div
             initial="hidden"
             animate={infoInView ? "visible" : "hidden"}
             variants={staggerContainer}
@@ -206,15 +206,15 @@ export default function ClientsPage() {
                 className="bg-white rounded-3xl p-8 shadow-xl ring-1 ring-black/5 relative overflow-hidden group"
               >
                 <div className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${info.gradient} opacity-10 rounded-bl-full transition-all duration-300 group-hover:scale-150`} />
-                
-                <motion.div 
+
+                <motion.div
                   whileHover={{ rotate: 360 }}
                   transition={{ duration: 0.6 }}
                   className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${info.gradient} text-white flex items-center justify-center shadow-lg mb-6`}
                 >
                   <info.icon className="text-2xl" />
                 </motion.div>
-                
+
                 <h3 className="text-3xl font-bold text-gray-900 mb-1">{info.number}</h3>
                 <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide">{info.title}</p>
                 <p className="text-xs text-gray-500 mt-1">{info.description}</p>
@@ -339,16 +339,16 @@ export default function ClientsPage() {
             {/* Background effect */}
             <div className="absolute right-0 top-0 w-64 h-64 bg-red-600/10 rounded-full blur-3xl -mr-32 -mt-32" />
             <div className="absolute left-0 bottom-0 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl -ml-32 -mb-32" />
-            
+
             <div className="relative z-10 text-center max-w-3xl mx-auto">
               <h2 className="text-4xl md:text-5xl font-bold mb-6">
                 Want to Join Our <span className="text-red-500">Partners</span>?
               </h2>
               <p className="text-gray-300 text-lg mb-8 leading-relaxed">
-                We're always looking to collaborate with innovative brands and organizations. 
+                We're always looking to collaborate with innovative brands and organizations.
                 Let's create something amazing together and build a lasting partnership.
               </p>
-              
+
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                 <motion.a
                   href="/contact"
@@ -359,7 +359,7 @@ export default function ClientsPage() {
                   <FaHandshake className="text-xl" />
                   Get In Touch
                 </motion.a>
-                
+
                 <motion.a
                   href="/about"
                   whileHover={{ scale: 1.05 }}

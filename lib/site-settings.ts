@@ -9,4 +9,4 @@ export const getSiteSettings = unstable_cache(async () => {
     // console.error("Error fetching site settings:", error);
     return {};
   }
-}, ["site-settings"], { revalidate: 300 });
+}, ["site-settings"], { revalidate: 1 });

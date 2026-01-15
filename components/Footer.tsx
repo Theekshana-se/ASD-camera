@@ -21,7 +21,7 @@ const Footer = ({ settings }: { settings?: any }) => {
   const about = Array.isArray(current?.footerAbout) ? current.footerAbout : navigation.about;
   const buy = Array.isArray(current?.footerBuy) ? current.footerBuy : navigation.buy;
   const help = Array.isArray(current?.footerHelp) ? current.footerHelp : navigation.help;
-  const logo = current?.logoUrl || "/logo v1.png";
+  const logo = current?.logoUrl || "/logo.png";
   const title = current?.asdCameraTitle || "ASD Camera";
   const desc = current?.asdCameraDescription || "";
   const locations = Array.isArray(current?.asdCameraLocations) ? current.asdCameraLocations : [];
@@ -48,13 +48,16 @@ const Footer = ({ settings }: { settings?: any }) => {
                 <div key={`${loc.city}-${idx}`} className="space-y-1">
                   {loc?.city && (
                     <div className="flex items-center gap-2 text-gray-800">
-                      <FaMapMarkerAlt className="text-red-600" />
-                      <span className="font-medium">{loc.city}</span>
+                      <FaMapMarkerAlt className="text-red-600 shrink-0" />
+                      <div className="flex flex-col">
+                        <span className="font-medium">{loc.city}</span>
+                        {loc?.address && <span className="text-sm text-gray-600">{loc.address}</span>}
+                      </div>
                     </div>
                   )}
                   {Array.isArray(loc?.phones) && loc.phones.map((ph: string, pIdx: number) => (
                     <div key={pIdx} className="flex items-center gap-2 text-gray-700">
-                      <FaPhoneAlt />
+                      <FaPhoneAlt className="shrink-0" />
                       <span>{ph}</span>
                     </div>
                   ))}

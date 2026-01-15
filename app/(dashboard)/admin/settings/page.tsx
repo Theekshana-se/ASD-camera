@@ -4,8 +4,8 @@ import { DashboardSidebar, AdminHeader } from "@/components";
 import apiClient from "@/lib/api";
 import { navigation, getImageUrl } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  FaGear, FaImage, FaPhone, FaEnvelope, FaBell, FaLink, 
+import {
+  FaGear, FaImage, FaPhone, FaEnvelope, FaBell, FaLink,
   FaLocationDot, FaPlus, FaTrash, FaCheck, FaXmark,
   FaFacebook, FaInstagram, FaGoogle, FaCreditCard, FaWhatsapp, FaFacebookMessenger
 } from "react-icons/fa6";
@@ -21,25 +21,37 @@ type Settings = {
   heroImageUrl?: string;
   noticeBarText?: string;
   noticeBarEnabled?: boolean;
+  noticeBarAnimationEnabled?: boolean;
   footerSale?: LinkItem[] | null;
   footerAbout?: LinkItem[] | null;
   footerBuy?: LinkItem[] | null;
   footerHelp?: LinkItem[] | null;
   asdCameraTitle?: string;
   asdCameraDescription?: string;
-  asdCameraLocations?: { city: string; phones: string[] }[] | null;
+  asdCameraLocations?: { city: string; address?: string; phones: string[] }[] | null;
   socialLinks?: { facebook?: string; instagram?: string; google?: string } | null;
   paymentMethods?: { name?: string; imageUrl: string }[] | null;
   whatsappNumber?: string;
   whatsappEnabled?: boolean;
   messengerEnabled?: boolean;
+  messengerUsername?: string; // Added missing field
   adminMessengerPsid?: string;
 };
 
+// Helper: Convert file to Base64
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 // Card component for settings sections
-const SettingsCard = ({ title, icon: Icon, children, className = "" }: { 
-  title: string; 
-  icon: React.ComponentType<{className?: string}>; 
+const SettingsCard = ({ title, icon: Icon, children, className = "" }: {
+  title: string;
+  icon: React.ComponentType<{ className?: string }>;
   children: React.ReactNode;
   className?: string;
 }) => (
@@ -109,9 +121,8 @@ const Toggle = ({ label, checked, onChange }: {
     <span className="text-sm font-medium text-gray-300">{label}</span>
     <button
       onClick={() => onChange(!checked)}
-      className={`relative w-12 h-6 rounded-full transition-colors ${
-        checked ? "bg-red-500" : "bg-gray-700"
-      }`}
+      className={`relative w-12 h-6 rounded-full transition-colors ${checked ? "bg-red-500" : "bg-gray-700"
+        }`}
     >
       <motion.div
         animate={{ x: checked ? 24 : 2 }}
@@ -141,6 +152,7 @@ const AdminSettingsPage = () => {
       heroImageUrl: data?.heroImageUrl || "",
       noticeBarText: data?.noticeBarText || "",
       noticeBarEnabled: Boolean(data?.noticeBarEnabled) || false,
+      noticeBarAnimationEnabled: data?.noticeBarAnimationEnabled !== undefined ? Boolean(data?.noticeBarAnimationEnabled) : true,
       footerSale: data?.footerSale || navigation.sale,
       footerAbout: data?.footerAbout || navigation.about,
       footerBuy: data?.footerBuy || navigation.buy,
@@ -190,13 +202,14 @@ const AdminSettingsPage = () => {
 
   const addLocation = () => {
     const arr = (settings.asdCameraLocations || []).slice();
-    arr.push({ city: "", phones: [""] });
+    arr.push({ city: "", address: "", phones: [""] });
     setSettings({ ...settings, asdCameraLocations: arr });
   };
 
-  const updateLocation = (index: number, field: "city" | "phones", value: any, phoneIndex?: number) => {
+  const updateLocation = (index: number, field: "city" | "address" | "phones", value: any, phoneIndex?: number) => {
     const arr = (settings.asdCameraLocations || []).slice();
     if (field === "city") arr[index].city = value;
+    if (field === "address") arr[index].address = value;
     if (field === "phones") {
       const phones = (arr[index].phones || []).slice();
       phones[phoneIndex || 0] = value;
@@ -229,17 +242,24 @@ const AdminSettingsPage = () => {
 
   const handleUploadPaymentLogos = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
-    const form = new FormData();
-    Array.from(files).forEach((f) => form.append("files", f));
-    const res = await fetch(`${apiClient.baseUrl}/api/payment-methods/upload`, {
-      method: "POST",
-      body: form,
-    });
-    const data = await res.json();
-    const urls: string[] = data?.urls || [];
-    const pm = (settings.paymentMethods || []).slice();
-    urls.forEach((u) => pm.push({ imageUrl: u }));
-    setSettings({ ...settings, paymentMethods: pm });
+
+    try {
+      const pm = (settings.paymentMethods || []).slice();
+
+      // Process all selected files locally
+      for (const file of Array.from(files)) {
+        const base64 = await fileToBase64(file);
+        // Default name to filename without extension for convenience
+        const name = file.name.replace(/\.[^/.]+$/, "");
+        pm.push({ name, imageUrl: base64 });
+      }
+
+      setSettings({ ...settings, paymentMethods: pm });
+      toast.success("Images ready to save");
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed to process images");
+    }
   };
 
   useEffect(() => {
@@ -257,431 +277,462 @@ const AdminSettingsPage = () => {
   return (
     <div className="flex min-h-screen bg-gray-950">
       <DashboardSidebar />
-      
+
       <div className="flex-1 flex flex-col">
         <AdminHeader />
         <main className="flex-1 p-8 overflow-auto">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/30">
-                <FaGear className="text-white text-xl" />
+          {/* Header */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/30">
+                  <FaGear className="text-white text-xl" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-white">Settings</h1>
+                  <p className="text-gray-400 text-sm">Configure your store settings</p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-white">Settings</h1>
-                <p className="text-gray-400 text-sm">Configure your store settings</p>
-              </div>
-            </div>
-            
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={saveSettings}
-              disabled={saving}
-              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold rounded-xl shadow-lg shadow-red-500/30 hover:shadow-red-500/50 transition-shadow disabled:opacity-50"
-            >
-              {saving ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <FaCheck className="text-sm" />
-              )}
-              {saving ? "Saving..." : "Save Changes"}
-            </motion.button>
-          </div>
-        </motion.div>
 
-        {/* Tabs */}
-        <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
-          {tabs.map((tab) => (
-            <motion.button
-              key={tab.id}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
-                activeTab === tab.id
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={saveSettings}
+                disabled={saving}
+                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold rounded-xl shadow-lg shadow-red-500/30 hover:shadow-red-500/50 transition-shadow disabled:opacity-50"
+              >
+                {saving ? (
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <FaCheck className="text-sm" />
+                )}
+                {saving ? "Saving..." : "Save Changes"}
+              </motion.button>
+            </div>
+          </motion.div>
+
+          {/* Tabs */}
+          <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
+            {tabs.map((tab) => (
+              <motion.button
+                key={tab.id}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${activeTab === tab.id
                   ? "bg-red-500/20 text-red-400 border border-red-500/30"
                   : "bg-gray-800/50 text-gray-400 border border-gray-700 hover:border-gray-600"
-              }`}
-            >
-              <tab.icon className="text-sm" />
-              {tab.label}
-            </motion.button>
-          ))}
-        </div>
-
-        {loading ? (
-          <div className="flex items-center justify-center h-64">
-            <div className="w-12 h-12 border-4 border-gray-700 border-t-red-500 rounded-full animate-spin" />
+                  }`}
+              >
+                <tab.icon className="text-sm" />
+                {tab.label}
+              </motion.button>
+            ))}
           </div>
-        ) : (
-          <AnimatePresence mode="wait">
-            {/* Header Tab */}
-            {activeTab === "header" && (
-              <motion.div
-                key="header"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="grid grid-cols-1 xl:grid-cols-2 gap-6"
-              >
-                <SettingsCard title="Branding" icon={FaImage}>
-                  <Input 
-                    label="Logo URL" 
-                    value={settings.logoUrl || ""} 
-                    onChange={(v) => setSettings({...settings, logoUrl: v})}
-                    placeholder="https://example.com/logo.png"
-                  />
-                </SettingsCard>
-                
-                <SettingsCard title="Contact Info" icon={FaPhone}>
-                  <div className="grid grid-cols-2 gap-4">
-                    <Input 
-                      label="Phone" 
-                      value={settings.contactPhone || ""} 
-                      onChange={(v) => setSettings({...settings, contactPhone: v})}
-                      placeholder="+94 77 123 4567"
-                    />
-                    <Input 
-                      label="Email" 
-                      value={settings.contactEmail || ""} 
-                      onChange={(v) => setSettings({...settings, contactEmail: v})}
-                      placeholder="contact@example.com"
-                      type="email"
-                    />
-                  </div>
-                </SettingsCard>
-                
-                <SettingsCard title="Notice Bar" icon={FaBell} className="xl:col-span-2">
-                  <Input 
-                    label="Notice Text" 
-                    value={settings.noticeBarText || ""} 
-                    onChange={(v) => setSettings({...settings, noticeBarText: v})}
-                    placeholder="Free shipping on orders over Rs. 5000!"
-                  />
-                  <Toggle 
-                    label="Enable Notice Bar" 
-                    checked={Boolean(settings.noticeBarEnabled)} 
-                    onChange={(v) => setSettings({...settings, noticeBarEnabled: v})}
-                  />
-                </SettingsCard>
 
-                <SettingsCard title="Chat Support" icon={FaWhatsapp} className="xl:col-span-2">
-                  <Input 
-                    label="WhatsApp Number" 
-                    value={settings.whatsappNumber || ""} 
-                    onChange={(v) => setSettings({...settings, whatsappNumber: v})}
-                    placeholder="+94771234567"
-                  />
-                  <div className="grid grid-cols-2 gap-4">
-                    <Toggle 
-                      label="Enable WhatsApp" 
-                      checked={Boolean(settings.whatsappEnabled)} 
-                      onChange={(v) => setSettings({...settings, whatsappEnabled: v})}
+          {loading ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="w-12 h-12 border-4 border-gray-700 border-t-red-500 rounded-full animate-spin" />
+            </div>
+          ) : (
+            <AnimatePresence mode="wait">
+              {/* Header Tab */}
+              {activeTab === "header" && (
+                <motion.div
+                  key="header"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="grid grid-cols-1 xl:grid-cols-2 gap-6"
+                >
+                  <SettingsCard title="Branding" icon={FaImage}>
+                    <Input
+                      label="Logo URL"
+                      value={settings.logoUrl || ""}
+                      onChange={(v) => setSettings({ ...settings, logoUrl: v })}
+                      placeholder="https://example.com/logo.png"
                     />
-                    <Toggle 
-                      label="Enable Messenger" 
-                      checked={Boolean(settings.messengerEnabled)} 
-                      onChange={(v) => setSettings({...settings, messengerEnabled: v})}
-                    />
-                  </div>
-                </SettingsCard>
-              </motion.div>
-            )}
+                  </SettingsCard>
 
-            {/* Hero Tab */}
-            {activeTab === "hero" && (
-              <motion.div
-                key="hero"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-              >
-                <SettingsCard title="Hero Section" icon={FaImage}>
-                  <Input 
-                    label="Title" 
-                    value={settings.heroTitle || ""} 
-                    onChange={(v) => setSettings({...settings, heroTitle: v})}
-                    placeholder="Welcome to ASD Camera Rent"
-                  />
-                  <Textarea 
-                    label="Subtitle" 
-                    value={settings.heroSubtitle || ""} 
-                    onChange={(v) => setSettings({...settings, heroSubtitle: v})}
-                    placeholder="Professional camera equipment for every occasion"
-                  />
-                  <Input 
-                    label="Background Image URL" 
-                    value={settings.heroImageUrl || ""} 
-                    onChange={(v) => setSettings({...settings, heroImageUrl: v})}
-                    placeholder="https://example.com/hero.jpg"
-                  />
-                  {settings.heroImageUrl && (
-                    <div className="mt-4 rounded-xl overflow-hidden border border-gray-700">
-                      <img src={settings.heroImageUrl} alt="Hero preview" className="w-full h-48 object-cover" />
+                  <SettingsCard title="Contact Info" icon={FaPhone}>
+                    <div className="grid grid-cols-2 gap-4">
+                      <Input
+                        label="Phone"
+                        value={settings.contactPhone || ""}
+                        onChange={(v) => setSettings({ ...settings, contactPhone: v })}
+                        placeholder="+94 77 123 4567"
+                      />
+                      <Input
+                        label="Email"
+                        value={settings.contactEmail || ""}
+                        onChange={(v) => setSettings({ ...settings, contactEmail: v })}
+                        placeholder="contact@example.com"
+                        type="email"
+                      />
                     </div>
-                  )}
-                </SettingsCard>
-              </motion.div>
-            )}
+                  </SettingsCard>
 
-            {/* Footer Tab */}
-            {activeTab === "footer" && (
-              <motion.div
-                key="footer"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-6"
-              >
-                {(["footerSale", "footerAbout", "footerBuy", "footerHelp"] as (keyof Settings)[]).map((sectionKey) => {
-                  const label = sectionKey.replace("footer", "");
-                  const arr = (settings[sectionKey] as LinkItem[]) || [];
-                  return (
-                    <SettingsCard key={sectionKey} title={`${label} Links`} icon={FaLink}>
-                      <div className="space-y-3">
-                        {arr.map((item, idx) => (
-                          <motion.div 
-                            key={idx} 
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="flex gap-3 items-center"
-                          >
-                            <input
-                              className="flex-1 px-4 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-red-500/50 text-sm"
-                              placeholder="Link Name"
-                              value={item.name}
-                              onChange={(e) => updateLink(sectionKey, idx, "name", e.target.value)}
-                            />
-                            <input
-                              className="flex-1 px-4 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-red-500/50 text-sm"
-                              placeholder="URL"
-                              value={item.href}
-                              onChange={(e) => updateLink(sectionKey, idx, "href", e.target.value)}
-                            />
-                            <motion.button
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.9 }}
-                              onClick={() => removeLink(sectionKey, idx)}
-                              className="p-2 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition-colors"
-                            >
-                              <FaTrash className="text-sm" />
-                            </motion.button>
-                          </motion.div>
-                        ))}
+                  <SettingsCard title="Notice Bar" icon={FaBell} className="xl:col-span-2">
+                    <Input
+                      label="Notice Text"
+                      value={settings.noticeBarText || ""}
+                      onChange={(v) => setSettings({ ...settings, noticeBarText: v })}
+                      placeholder="Free shipping on orders over Rs. 5000!"
+                    />
+                    <Toggle
+                      label="Enable Notice Bar"
+                      checked={Boolean(settings.noticeBarEnabled)}
+                      onChange={(v) => setSettings({ ...settings, noticeBarEnabled: v })}
+                    />
+                    <Toggle
+                      label="Enable Animation"
+                      checked={Boolean(settings.noticeBarAnimationEnabled)}
+                      onChange={(v) => setSettings({ ...settings, noticeBarAnimationEnabled: v })}
+                    />
+                  </SettingsCard>
+
+                  <SettingsCard title="Chat Support" icon={FaWhatsapp} className="xl:col-span-2">
+                    <Input
+                      label="WhatsApp Number"
+                      value={settings.whatsappNumber || ""}
+                      onChange={(v) => setSettings({ ...settings, whatsappNumber: v })}
+                      placeholder="+94771234567"
+                    />
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <Toggle
+                        label="Enable WhatsApp"
+                        checked={Boolean(settings.whatsappEnabled)}
+                        onChange={(v) => setSettings({ ...settings, whatsappEnabled: v })}
+                      />
+                      <Toggle
+                        label="Enable Messenger"
+                        checked={Boolean(settings.messengerEnabled)}
+                        onChange={(v) => setSettings({ ...settings, messengerEnabled: v })}
+                      />
+                    </div>
+                  </SettingsCard>
+                </motion.div>
+              )}
+
+              {/* Hero Tab */}
+              {activeTab === "hero" && (
+                <motion.div
+                  key="hero"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                >
+                  <SettingsCard title="Hero Section" icon={FaImage}>
+                    <Input
+                      label="Title"
+                      value={settings.heroTitle || ""}
+                      onChange={(v) => setSettings({ ...settings, heroTitle: v })}
+                      placeholder="Welcome to ASD Camera Rent"
+                    />
+                    <Textarea
+                      label="Subtitle"
+                      value={settings.heroSubtitle || ""}
+                      onChange={(v) => setSettings({ ...settings, heroSubtitle: v })}
+                      placeholder="Professional camera equipment for every occasion"
+                    />
+                    <Input
+                      label="Background Image URL"
+                      value={settings.heroImageUrl || ""}
+                      onChange={(v) => setSettings({ ...settings, heroImageUrl: v })}
+                      placeholder="https://example.com/hero.jpg"
+                    />
+                    {settings.heroImageUrl && (
+                      <div className="mt-4 rounded-xl overflow-hidden border border-gray-700">
+                        <img src={settings.heroImageUrl} alt="Hero preview" className="w-full h-48 object-cover" />
                       </div>
-                      <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => addLink(sectionKey)}
-                        className="mt-4 flex items-center gap-2 px-4 py-2 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors text-sm"
-                      >
-                        <FaPlus />
-                        Add Link
-                      </motion.button>
-                    </SettingsCard>
-                  );
-                })}
-              </motion.div>
-            )}
+                    )}
+                  </SettingsCard>
+                </motion.div>
+              )}
 
-            {/* Locations Tab */}
-            {activeTab === "locations" && (
-              <motion.div
-                key="locations"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-              >
-                <SettingsCard title="ASD Camera Locations" icon={FaLocationDot}>
-                  <Input 
-                    label="Section Title" 
-                    value={settings.asdCameraTitle || ""} 
-                    onChange={(v) => setSettings({...settings, asdCameraTitle: v})}
-                  />
-                  <Textarea 
-                    label="Description" 
-                    value={settings.asdCameraDescription || ""} 
-                    onChange={(v) => setSettings({...settings, asdCameraDescription: v})}
-                  />
-
-                  <div className="space-y-4 mt-6">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-medium text-gray-400">Locations</h3>
-                      <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={addLocation}
-                        className="flex items-center gap-2 px-3 py-1.5 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors text-sm"
-                      >
-                        <FaPlus className="text-xs" />
-                        Add Location
-                      </motion.button>
-                    </div>
-
-                    {(settings.asdCameraLocations || []).map((loc, idx) => (
-                      <motion.div 
-                        key={idx} 
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="p-4 bg-gray-800/30 rounded-xl border border-gray-700 space-y-3"
-                      >
-                        <div className="flex gap-3 items-center">
-                          <input
-                            className="flex-1 px-4 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-red-500/50 text-sm"
-                            placeholder="City Name"
-                            value={loc.city}
-                            onChange={(e) => updateLocation(idx, "city", e.target.value)}
-                          />
-                          <motion.button
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={() => removeLocation(idx)}
-                            className="p-2 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition-colors"
-                          >
-                            <FaTrash className="text-sm" />
-                          </motion.button>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          {(loc.phones || []).map((ph, pIdx) => (
-                            <div key={pIdx} className="flex gap-2 items-center">
+              {/* Footer Tab */}
+              {activeTab === "footer" && (
+                <motion.div
+                  key="footer"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="space-y-6"
+                >
+                  {(["footerSale", "footerAbout", "footerBuy", "footerHelp"] as (keyof Settings)[]).map((sectionKey) => {
+                    const label = sectionKey.replace("footer", "");
+                    const arr = (settings[sectionKey] as LinkItem[]) || [];
+                    return (
+                      <SettingsCard key={sectionKey} title={`${label} Links`} icon={FaLink}>
+                        <div className="space-y-3">
+                          {arr.map((item, idx) => (
+                            <motion.div
+                              key={idx}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="flex gap-3 items-center"
+                            >
                               <input
                                 className="flex-1 px-4 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-red-500/50 text-sm"
-                                placeholder="Phone Number"
-                                value={ph}
-                                onChange={(e) => updateLocation(idx, "phones", e.target.value, pIdx)}
+                                placeholder="Link Name"
+                                value={item.name}
+                                onChange={(e) => updateLink(sectionKey, idx, "name", e.target.value)}
+                              />
+                              <input
+                                className="flex-1 px-4 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-red-500/50 text-sm"
+                                placeholder="URL"
+                                value={item.href}
+                                onChange={(e) => updateLink(sectionKey, idx, "href", e.target.value)}
                               />
                               <motion.button
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
-                                onClick={() => removePhone(idx, pIdx)}
-                                className="p-2 bg-gray-700 text-gray-400 rounded-lg hover:bg-gray-600 transition-colors"
+                                onClick={() => removeLink(sectionKey, idx)}
+                                className="p-2 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition-colors"
                               >
-                                <FaXmark className="text-sm" />
+                                <FaTrash className="text-sm" />
                               </motion.button>
-                            </div>
+                            </motion.div>
                           ))}
-                          <button
-                            onClick={() => addPhone(idx)}
-                            className="text-xs text-red-400 hover:text-red-300 transition-colors"
-                          >
-                            + Add Phone
-                          </button>
                         </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                </SettingsCard>
-              </motion.div>
-            )}
-
-            {/* Social Tab */}
-            {activeTab === "social" && (
-              <motion.div
-                key="social"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="grid grid-cols-1 xl:grid-cols-2 gap-6"
-              >
-                <SettingsCard title="Social Links" icon={FaFacebook}>
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-blue-600/20 rounded-lg flex items-center justify-center">
-                        <FaFacebook className="text-blue-400" />
-                      </div>
-                      <input
-                        className="flex-1 px-4 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 text-sm"
-                        placeholder="Facebook URL"
-                        value={settings.socialLinks?.facebook || ""}
-                        onChange={(e) => setSettings({...settings, socialLinks: { ...(settings.socialLinks || {}), facebook: e.target.value }})}
-                      />
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-pink-600/20 rounded-lg flex items-center justify-center">
-                        <FaInstagram className="text-pink-400" />
-                      </div>
-                      <input
-                        className="flex-1 px-4 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/50 text-sm"
-                        placeholder="Instagram URL"
-                        value={settings.socialLinks?.instagram || ""}
-                        onChange={(e) => setSettings({...settings, socialLinks: { ...(settings.socialLinks || {}), instagram: e.target.value }})}
-                      />
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-red-600/20 rounded-lg flex items-center justify-center">
-                        <FaGoogle className="text-red-400" />
-                      </div>
-                      <input
-                        className="flex-1 px-4 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-red-500/50 text-sm"
-                        placeholder="Google URL"
-                        value={settings.socialLinks?.google || ""}
-                        onChange={(e) => setSettings({...settings, socialLinks: { ...(settings.socialLinks || {}), google: e.target.value }})}
-                      />
-                    </div>
-                  </div>
-                </SettingsCard>
-
-                <SettingsCard title="Payment Methods" icon={FaCreditCard}>
-                  <div className="space-y-4">
-                    <label className="flex items-center gap-3 px-4 py-3 bg-gray-800/50 border border-dashed border-gray-600 rounded-xl cursor-pointer hover:border-gray-500 transition-colors">
-                      <FaPlus className="text-gray-500" />
-                      <span className="text-sm text-gray-400">Upload Payment Logos</span>
-                      <input 
-                        type="file" 
-                        multiple 
-                        className="hidden" 
-                        onChange={(e) => handleUploadPaymentLogos(e.target.files)} 
-                      />
-                    </label>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      {(settings.paymentMethods || []).map((pm, idx) => (
-                        <motion.div 
-                          key={idx}
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          className="relative bg-gray-800/50 rounded-xl p-3 border border-gray-700"
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => addLink(sectionKey)}
+                          className="mt-4 flex items-center gap-2 px-4 py-2 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors text-sm"
                         >
-                          <img src={getImageUrl(pm.imageUrl)} alt={pm.name || "Payment"} className="h-12 w-full object-contain" />
-                          <input
-                            className="mt-2 w-full px-2 py-1 bg-gray-700/50 border border-gray-600 rounded text-white text-xs"
-                            placeholder="Label (optional)"
-                            value={pm.name || ""}
-                            onChange={(e) => {
-                              const arr = (settings.paymentMethods || []).slice();
-                              arr[idx] = { ...arr[idx], name: e.target.value };
-                              setSettings({ ...settings, paymentMethods: arr });
-                            }}
-                          />
-                          <motion.button
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={() => {
-                              const arr = (settings.paymentMethods || []).slice();
-                              arr.splice(idx, 1);
-                              setSettings({ ...settings, paymentMethods: arr });
-                            }}
-                            className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg"
-                          >
-                            <FaXmark className="text-xs" />
-                          </motion.button>
+                          <FaPlus />
+                          Add Link
+                        </motion.button>
+                      </SettingsCard>
+                    );
+                  })}
+                </motion.div>
+              )}
+
+              {/* Locations Tab */}
+              {activeTab === "locations" && (
+                <motion.div
+                  key="locations"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                >
+                  <SettingsCard title="ASD Camera Locations" icon={FaLocationDot}>
+                    <Input
+                      label="Section Title"
+                      value={settings.asdCameraTitle || ""}
+                      onChange={(v) => setSettings({ ...settings, asdCameraTitle: v })}
+                    />
+                    <Textarea
+                      label="Description"
+                      value={settings.asdCameraDescription || ""}
+                      onChange={(v) => setSettings({ ...settings, asdCameraDescription: v })}
+                    />
+
+                    <div className="space-y-4 mt-6">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-sm font-medium text-gray-400">Locations</h3>
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={addLocation}
+                          className="flex items-center gap-2 px-3 py-1.5 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors text-sm"
+                        >
+                          <FaPlus className="text-xs" />
+                          Add Location
+                        </motion.button>
+                      </div>
+
+                      {(settings.asdCameraLocations || []).map((loc, idx) => (
+                        <motion.div
+                          key={idx}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="p-4 bg-gray-800/30 rounded-xl border border-gray-700 space-y-3"
+                        >
+                          <div className="flex gap-3 items-center">
+                            <input
+                              className="flex-1 px-4 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-red-500/50 text-sm"
+                              placeholder="City Name"
+                              value={loc.city}
+                              onChange={(e) => updateLocation(idx, "city", e.target.value)}
+                            />
+                            <input
+                              className="flex-[2] px-4 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-red-500/50 text-sm"
+                              placeholder="Address (Optional)"
+                              value={loc.address || ""}
+                              onChange={(e) => updateLocation(idx, "address", e.target.value)}
+                            />
+                            <motion.button
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                              onClick={() => removeLocation(idx)}
+                              className="p-2 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition-colors"
+                            >
+                              <FaTrash className="text-sm" />
+                            </motion.button>
+                          </div>
+
+                          <div className="space-y-2">
+                            {(loc.phones || []).map((ph, pIdx) => (
+                              <div key={pIdx} className="flex gap-2 items-center">
+                                <input
+                                  className="flex-1 px-4 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-red-500/50 text-sm"
+                                  placeholder="Phone Number"
+                                  value={ph}
+                                  onChange={(e) => updateLocation(idx, "phones", e.target.value, pIdx)}
+                                />
+                                <motion.button
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.9 }}
+                                  onClick={() => removePhone(idx, pIdx)}
+                                  className="p-2 bg-gray-700 text-gray-400 rounded-lg hover:bg-gray-600 transition-colors"
+                                >
+                                  <FaXmark className="text-sm" />
+                                </motion.button>
+                              </div>
+                            ))}
+                            <button
+                              onClick={() => addPhone(idx)}
+                              className="text-xs text-red-400 hover:text-red-300 transition-colors"
+                            >
+                              + Add Phone
+                            </button>
+                          </div>
                         </motion.div>
                       ))}
                     </div>
-                  </div>
-                </SettingsCard>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        )}
-      </main>
+                  </SettingsCard>
+                </motion.div>
+              )}
+
+              {/* Social Tab */}
+              {activeTab === "social" && (
+                <motion.div
+                  key="social"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="grid grid-cols-1 xl:grid-cols-2 gap-6"
+                >
+                  <SettingsCard title="Social Links" icon={FaFacebook}>
+                    <div className="space-y-4">
+                      {/* Messenger Username Field */}
+                      <div className="form-control bg-gray-800/30 p-4 rounded-xl border border-gray-700">
+                        <label className="label cursor-pointer justify-start gap-2">
+                          <FaFacebookMessenger className="text-blue-500" />
+                          <span className="label-text font-semibold text-white">Messenger Integration</span>
+                        </label>
+                        <div className="mt-2 text-xs text-gray-400 mb-2">
+                          Enter your Page Username to receive orders. (e.g. for <b>facebook.com/asdcamera</b>, enter <b>asdcamera</b>)
+                        </div>
+                        <input
+                          type="text"
+                          className="w-full px-4 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 text-sm"
+                          value={settings.messengerUsername || ""}
+                          onChange={(e) =>
+                            setSettings({ ...settings, messengerUsername: e.target.value })
+                          }
+                          placeholder="Page Username (e.g. asdcamera)"
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-blue-600/20 rounded-lg flex items-center justify-center">
+                          <FaFacebook className="text-blue-400" />
+                        </div>
+                        <input
+                          className="flex-1 px-4 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 text-sm"
+                          placeholder="Facebook URL"
+                          value={settings.socialLinks?.facebook || ""}
+                          onChange={(e) => setSettings({ ...settings, socialLinks: { ...(settings.socialLinks || {}), facebook: e.target.value } })}
+                        />
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-pink-600/20 rounded-lg flex items-center justify-center">
+                          <FaInstagram className="text-pink-400" />
+                        </div>
+                        <input
+                          className="flex-1 px-4 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-pink-500/50 text-sm"
+                          placeholder="Instagram URL"
+                          value={settings.socialLinks?.instagram || ""}
+                          onChange={(e) => setSettings({ ...settings, socialLinks: { ...(settings.socialLinks || {}), instagram: e.target.value } })}
+                        />
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-red-600/20 rounded-lg flex items-center justify-center">
+                          <FaGoogle className="text-red-400" />
+                        </div>
+                        <input
+                          className="flex-1 px-4 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-red-500/50 text-sm"
+                          placeholder="Google URL"
+                          value={settings.socialLinks?.google || ""}
+                          onChange={(e) => setSettings({ ...settings, socialLinks: { ...(settings.socialLinks || {}), google: e.target.value } })}
+                        />
+                      </div>
+                    </div>
+                  </SettingsCard>
+
+                  <SettingsCard title="Payment Methods" icon={FaCreditCard}>
+                    <div className="space-y-4">
+                      <label className="flex items-center gap-3 px-4 py-3 bg-gray-800/50 border border-dashed border-gray-600 rounded-xl cursor-pointer hover:border-gray-500 transition-colors">
+                        <FaPlus className="text-gray-500" />
+                        <span className="text-sm text-gray-400">Upload Payment Logos</span>
+                        <input
+                          type="file"
+                          multiple
+                          className="hidden"
+                          onChange={(e) => handleUploadPaymentLogos(e.target.files)}
+                        />
+                      </label>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        {(settings.paymentMethods || []).map((pm, idx) => (
+                          <motion.div
+                            key={idx}
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="relative bg-gray-800/50 rounded-xl p-3 border border-gray-700"
+                          >
+                            <img src={getImageUrl(pm.imageUrl)} alt={pm.name || "Payment"} className="h-12 w-full object-contain" />
+                            <input
+                              className="mt-2 w-full px-2 py-1 bg-gray-700/50 border border-gray-600 rounded text-white text-xs"
+                              placeholder="Label (optional)"
+                              value={pm.name || ""}
+                              onChange={(e) => {
+                                const arr = (settings.paymentMethods || []).slice();
+                                arr[idx] = { ...arr[idx], name: e.target.value };
+                                setSettings({ ...settings, paymentMethods: arr });
+                              }}
+                            />
+                            <motion.button
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                              onClick={() => {
+                                const arr = (settings.paymentMethods || []).slice();
+                                arr.splice(idx, 1);
+                                setSettings({ ...settings, paymentMethods: arr });
+                              }}
+                              className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg"
+                            >
+                              <FaXmark className="text-xs" />
+                            </motion.button>
+                          </motion.div>
+                        ))}
+                      </div>
+                    </div>
+                  </SettingsCard>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          )}
+        </main>
       </div>
     </div>
   );

@@ -35,7 +35,7 @@ export default function BrandsCarousel() {
       <FaChevronLeft />
     </motion.button>
   );
-  
+
   const NextArrow = (props: any) => (
     <motion.button
       whileHover={{ scale: 1.1, x: 4 }}
@@ -52,29 +52,28 @@ export default function BrandsCarousel() {
     const load = async () => {
       setLoading(true);
       try {
-        const bres = await apiClient.get("/api/brands");
-        let arr: LogoItem[] = [];
-        if (bres.ok) {
-          const bdata = await bres.json();
-          arr = (Array.isArray(bdata) ? bdata : [])
-            .filter((b: any) => b?.name)
-            .slice(0, 12)
-            .map((b: any, idx: number) => ({
-              id: b.id || String(idx),
-              imageUrl: b.imageUrl || "/logo.png",
+        const res = await apiClient.get("/api/brands");
+        if (res.ok) {
+          const data = await res.json();
+          const arr = (Array.isArray(data) ? data : [])
+            .filter((b: any) => b?.imageUrl) // Filter brands with images
+            .map((b: any) => ({
+              id: b.id,
+              imageUrl: b.imageUrl,
               alt: b.name,
-              href: `/shop?brand=${encodeURIComponent(b.name)}`,
+              href: `/shop?brand=${encodeURIComponent(b.id)}`,
               active: true,
             }));
+
+          // Deduplicate by ID just in case
+          const uniqueItems = Array.from(new Map(arr.map((item: any) => [item.id, item])).values()) as LogoItem[];
+          setItems(uniqueItems);
+        } else {
+          console.error("Failed to fetch brands");
+          setItems([]);
         }
-        if (!arr.length || arr.every((i) => !i.imageUrl || i.imageUrl === "/logo.png")) {
-          const res = await apiClient.get("/api/client-logos");
-          const data = await res.json();
-          const logos: LogoItem[] = Array.isArray(data) ? data.filter((i: any) => i?.imageUrl) : [];
-          arr = logos.length ? logos : arr;
-        }
-        setItems(arr);
-      } catch {
+      } catch (e) {
+        console.error("Error loading brands:", e);
         setItems([]);
       } finally {
         setLoading(false);
@@ -86,7 +85,7 @@ export default function BrandsCarousel() {
   const settings = {
     arrows: true,
     dots: true,
-    infinite: true,
+    infinite: items.length > 4, // Only loop if enough items
     speed: 600,
     slidesToShow: 5,
     slidesToScroll: 1,
@@ -94,9 +93,9 @@ export default function BrandsCarousel() {
     autoplaySpeed: 3000,
     pauseOnHover: true,
     responsive: [
-      { breakpoint: 1280, settings: { slidesToShow: 4, slidesToScroll: 1 } },
-      { breakpoint: 1024, settings: { slidesToShow: 3, slidesToScroll: 1 } },
-      { breakpoint: 640, settings: { slidesToShow: 2, slidesToScroll: 1 } },
+      { breakpoint: 1280, settings: { slidesToShow: Math.min(items.length, 4), slidesToScroll: 1, infinite: items.length > 3 } },
+      { breakpoint: 1024, settings: { slidesToShow: Math.min(items.length, 3), slidesToScroll: 1, infinite: items.length > 2 } },
+      { breakpoint: 640, settings: { slidesToShow: Math.min(items.length, 2), slidesToScroll: 1, infinite: items.length > 1 } },
     ],
     nextArrow: <NextArrow />,
     prevArrow: <PrevArrow />,
@@ -128,7 +127,7 @@ export default function BrandsCarousel() {
           ease: "easeInOut",
         }}
       />
-      
+
       <div className="relative max-w-screen-2xl mx-auto py-24 px-10 max-sm:px-6">
         {/* Section Header */}
         <motion.div
@@ -169,71 +168,71 @@ export default function BrandsCarousel() {
           transition={{ duration: 0.7, delay: 0.3 }}
           className="relative"
         >
-            {loading ? (
-              <div className="grid grid-cols-5 gap-6 max-xl:grid-cols-4 max-lg:grid-cols-3 max-sm:grid-cols-2">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.3, delay: i * 0.1 }}
-                    className="h-32 bg-[#F8F9FA] rounded-xl animate-pulse border border-[#E5E7EB]"
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="relative px-12 max-sm:px-0">
-                <Slider {...settings}>
-                  {items.map((it, index) => (
-                    <div key={it.id} className="px-3">
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.5, delay: index * 0.05 }}
-                      >
-                        <Link href={it.href || "#"} className="block group">
+          {loading ? (
+            <div className="grid grid-cols-5 gap-6 max-xl:grid-cols-4 max-lg:grid-cols-3 max-sm:grid-cols-2">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3, delay: i * 0.1 }}
+                  className="h-32 bg-[#F8F9FA] rounded-xl animate-pulse border border-[#E5E7EB]"
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="relative px-12 max-sm:px-0">
+              <Slider {...settings}>
+                {items.map((it, index) => (
+                  <div key={it.id} className="px-3">
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.5, delay: index * 0.05 }}
+                    >
+                      <Link href={it.href || "#"} className="block group">
+                        <motion.div
+                          whileHover={{ y: -8 }}
+                          transition={{ duration: 0.3, ease: "easeOut" }}
+                          className="relative bg-white rounded-xl p-8 shadow-sm hover:shadow-xl transition-all duration-300 border border-[#E5E7EB] hover:border-[#FF1F1F] overflow-hidden"
+                        >
+                          {/* Hover Red Glow */}
                           <motion.div
-                            whileHover={{ y: -8 }}
-                            transition={{ duration: 0.3, ease: "easeOut" }}
-                            className="relative bg-white rounded-xl p-8 shadow-sm hover:shadow-xl transition-all duration-300 border border-[#E5E7EB] hover:border-[#FF1F1F] overflow-hidden"
-                          >
-                            {/* Hover Red Glow */}
-                            <motion.div
-                              className="absolute inset-0 bg-gradient-to-br from-red-500/0 to-red-500/0 group-hover:from-red-500/5 group-hover:to-red-500/10 transition-all duration-500"
-                            />
-                            
-                            {/* Brand Logo */}
-                            <div className="relative h-24 w-full flex items-center justify-center">
-                              <Image
-                                src={getImageUrl(it.imageUrl)}
-                                alt={it.alt || "Brand"}
-                                width={200}
-                                height={96}
-                                className="object-contain h-full w-auto max-w-full filter grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500"
-                              />
-                            </div>
-                            
-                            {/* Brand Name */}
-                            <div className="mt-4 text-center">
-                              <div className="text-sm font-bold text-[#6B7280] group-hover:text-[#FF1F1F] transition-colors duration-300 uppercase tracking-wider">
-                                {it.alt || "Brand"}
-                              </div>
-                            </div>
+                            className="absolute inset-0 bg-gradient-to-br from-red-500/0 to-red-500/0 group-hover:from-red-500/5 group-hover:to-red-500/10 transition-all duration-500"
+                          />
 
-                            {/* Corner Accent */}
-                            <motion.div
-                              className="absolute top-0 right-0 w-12 h-12 bg-[#FF1F1F]/0 group-hover:bg-[#FF1F1F]/10"
-                              style={{ clipPath: "polygon(100% 0, 0 0, 100% 100%)" }}
+                          {/* Brand Logo */}
+                          <div className="relative h-24 w-full flex items-center justify-center">
+                            <Image
+                              src={getImageUrl(it.imageUrl)}
+                              alt={it.alt || "Brand"}
+                              width={200}
+                              height={96}
+                              className="object-contain h-full w-auto max-w-full filter grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500"
                             />
-                          </motion.div>
-                        </Link>
-                      </motion.div>
-                    </div>
-                  ))}
-                </Slider>
-              </div>
-            )}
+                          </div>
+
+                          {/* Brand Name */}
+                          <div className="mt-4 text-center">
+                            <div className="text-sm font-bold text-[#6B7280] group-hover:text-[#FF1F1F] transition-colors duration-300 uppercase tracking-wider">
+                              {it.alt || "Brand"}
+                            </div>
+                          </div>
+
+                          {/* Corner Accent */}
+                          <motion.div
+                            className="absolute top-0 right-0 w-12 h-12 bg-[#FF1F1F]/0 group-hover:bg-[#FF1F1F]/10"
+                            style={{ clipPath: "polygon(100% 0, 0 0, 100% 100%)" }}
+                          />
+                        </motion.div>
+                      </Link>
+                    </motion.div>
+                  </div>
+                ))}
+              </Slider>
+            </div>
+          )}
         </motion.div>
 
         {/* Stats Section */}
@@ -260,7 +259,7 @@ export default function BrandsCarousel() {
             >
               {/* Background accent */}
               <div className="absolute inset-0 bg-gradient-to-br from-red-500/0 to-red-500/0 group-hover:from-red-500/5 group-hover:to-red-500/10 transition-all duration-300" />
-              
+
               <div className="relative">
                 <div className="text-5xl font-bold text-[#1A1F2E] font-mono group-hover:text-[#FF1F1F] transition-colors duration-300">
                   {stat.number}

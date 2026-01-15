@@ -15,8 +15,20 @@ import { motion } from "framer-motion";
 
 const IntroducingSection = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [particles, setParticles] = React.useState<any[]>([]);
 
   useEffect(() => {
+    // Generate particles on client side to avoid hydration mismatch
+    setParticles(
+      [...Array(20)].map(() => ({
+        x: Math.random() * 100 + "%",
+        y: Math.random() * 100 + "%",
+        yEnd: Math.random() * -100 - 100 + "%",
+        duration: Math.random() * 3 + 2,
+        delay: Math.random() * 2,
+      }))
+    );
+
     // Ensure video plays on mount
     if (videoRef.current) {
       videoRef.current.play().catch(() => {
@@ -46,22 +58,22 @@ const IntroducingSection = () => {
 
       {/* Animated Particles */}
       <div className="absolute inset-0 overflow-hidden">
-        {[...Array(20)].map((_, i) => (
+        {particles.map((p, i) => (
           <motion.div
             key={i}
             className="absolute w-1 h-1 bg-red-500/30 rounded-full"
             initial={{
-              x: Math.random() * 100 + "%",
-              y: Math.random() * 100 + "%",
+              x: p.x,
+              y: p.y,
             }}
             animate={{
-              y: [null, Math.random() * -100 - 100 + "%"],
+              y: [null, p.yEnd],
               opacity: [0, 1, 0],
             }}
             transition={{
-              duration: Math.random() * 3 + 2,
+              duration: p.duration,
               repeat: Infinity,
-              delay: Math.random() * 2,
+              delay: p.delay,
             }}
           />
         ))}
@@ -142,7 +154,7 @@ const IntroducingSection = () => {
                 CAMERA
               </span>
             </h1>
-            
+
             {/* Animated Underline */}
             <motion.div
               initial={{ scaleX: 0 }}
@@ -166,7 +178,7 @@ const IntroducingSection = () => {
             Capture Every Moment in Stunning Detail
           </p>
           <p className="text-gray-400 text-center text-lg max-md:text-base leading-relaxed">
-            Premium camera rentals and sales with flexible terms, fast delivery, and expert support — 
+            Premium camera rentals and sales with flexible terms, fast delivery, and expert support —
             everything you need for professional photography and videography in one place.
           </p>
         </motion.div>
@@ -184,9 +196,9 @@ const IntroducingSection = () => {
           >
             {/* Button Glow Effect */}
             <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-            
+
             <span className="relative z-10 uppercase tracking-wider">Explore Collection</span>
-            
+
             <svg
               className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform"
               fill="none"

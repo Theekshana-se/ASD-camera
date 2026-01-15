@@ -40,7 +40,7 @@ async function getMerchantById(request, response) {
 
 async function createMerchant(request, response) {
   try {
-    const { name, email, phone, address, description, status } = request.body;
+    const { name, email, phone, address, description, status, image } = request.body;
 
     const merchant = await prisma.merchant.create({
       data: {
@@ -49,6 +49,7 @@ async function createMerchant(request, response) {
         phone,
         address,
         description,
+        image,
         status: status || "ACTIVE",
       },
     });
@@ -63,7 +64,7 @@ async function createMerchant(request, response) {
 async function updateMerchant(request, response) {
   try {
     const { id } = request.params;
-    const { name, email, phone, address, description, status } = request.body;
+    const { name, email, phone, address, description, status, image } = request.body;
 
     const merchant = await prisma.merchant.update({
       where: {
@@ -75,6 +76,7 @@ async function updateMerchant(request, response) {
         phone,
         address,
         description,
+        image,
         status,
       },
     });
@@ -82,14 +84,14 @@ async function updateMerchant(request, response) {
     return response.json(merchant);
   } catch (error) {
     console.error("Error updating merchant:", error);
-    return response.status(500).json({ error: "Error updating merchant" });
+    return response.status(500).json({ error: "Error updating merchant", details: error.message });
   }
 }
 
 async function deleteMerchant(request, response) {
   try {
     const { id } = request.params;
-    
+
     // Check if merchant has products before deletion
     const merchant = await prisma.merchant.findUnique({
       where: { id },

@@ -9,7 +9,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { MdDashboard } from "react-icons/md";
-import { 
+import {
   FaGear,
   FaBagShopping,
   FaStore,
@@ -79,7 +79,7 @@ const DashboardSidebar = () => {
               )}
               <div className="space-y-1">
                 {groupItems.map((item) => {
-                  const active = pathname === item.href || 
+                  const active = pathname === item.href ||
                     (item.href !== "/admin" && pathname.startsWith(item.href));
 
                   return (
@@ -87,8 +87,8 @@ const DashboardSidebar = () => {
                       <div
                         className={`
                           flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200
-                          ${active 
-                            ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg shadow-red-500/30" 
+                          ${active
+                            ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg shadow-red-500/30"
                             : "text-gray-400 hover:text-white hover:bg-white/5"
                           }
                         `}
@@ -166,14 +166,14 @@ const DashboardSidebar = () => {
       <motion.aside
         animate={{ width: isCollapsed ? 80 : 280 }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
-        className="hidden xl:flex flex-col h-screen sticky top-0 bg-gradient-to-b from-gray-900 via-gray-900 to-gray-950 border-r border-gray-800/50"
+        className="hidden xl:flex flex-col h-screen sticky top-0 bg-gradient-to-b from-gray-900 via-gray-900 to-gray-950 border-r border-gray-800/50 z-40"
       >
         {renderContent(isCollapsed)}
-        
+
         {/* Collapse Button */}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="absolute -right-3 top-20 w-6 h-6 bg-gray-800 border border-gray-700 rounded-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-red-500 hover:border-red-500 transition-all shadow-lg"
+          className="absolute -right-3 top-20 w-6 h-6 bg-gray-800 border border-gray-700 rounded-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-red-500 hover:border-red-500 transition-all shadow-lg z-50"
         >
           <span style={{ transform: isCollapsed ? "rotate(180deg)" : "rotate(0deg)" }}>
             ‹

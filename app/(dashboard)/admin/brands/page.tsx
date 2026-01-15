@@ -1,36 +1,95 @@
 "use client";
-import { DashboardSidebar, AdminHeader } from "@/components";
 import React, { useEffect, useState } from "react";
-import toast from "react-hot-toast";
-import apiClient from "@/lib/api";
+import { DashboardSidebar, AdminHeader } from "@/components";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaTags, FaPlus, FaMagnifyingGlass, FaPen, FaTrash } from "react-icons/fa6";
+import {
+  FaTags,
+  FaPlus,
+  FaMagnifyingGlass,
+  FaPen,
+  FaTrash,
+  FaArrowRight,
+  FaImage
+} from "react-icons/fa6";
+import toast from "react-hot-toast";
+import apiClient from "@/lib/api";
+import Image from "next/image";
 
-type Brand = { id: string; name: string };
+type Brand = { id: string; name: string; imageUrl?: string };
 
 export default function AdminBrandsPage() {
   const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const load = async () => {
+  // Form State
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [newBrandName, setNewBrandName] = useState("");
+  const [newBrandImage, setNewBrandImage] = useState("");
+
+  const fetchBrands = async () => {
     setLoading(true);
-    const res = await apiClient.get("/api/brands");
-    const data = await res.json();
-    setBrands(Array.isArray(data) ? data : []);
-    setLoading(false);
+    try {
+      const res = await apiClient.get("/api/brands");
+      const data = await res.json();
+      setBrands(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("Error fetching brands:", error);
+      toast.error("Failed to load brands");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    fetchBrands();
+  }, []);
 
-  const remove = async (id: string) => {
-    const res = await apiClient.delete(`/api/brands/${id}`);
-    if (res.status === 204) {
-      toast.success("Brand deleted");
-      setBrands((b) => b.filter((x) => x.id !== id));
-    } else {
-      toast.error("Failed to delete brand");
+  const deleteBrand = async (id: string) => {
+    // if (!confirm("Are you sure you want to delete this brand?")) return;
+    try {
+      const res = await apiClient.delete(`/api/brands/${id}`);
+      if (res.status === 204) {
+        setBrands((prev) => prev.filter((b) => b.id !== id));
+        toast.success("Brand deleted");
+      } else {
+        const errorData = await res.json();
+        toast.error(errorData.error || "Failed to delete brand");
+      }
+    } catch {
+      toast.error("Error deleting brand");
+    }
+  };
+
+  const handleCreateBrand = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newBrandName.trim()) {
+      toast.error("Brand name is required");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const payload: any = { name: newBrandName.trim() };
+      if (newBrandImage.trim()) payload.imageUrl = newBrandImage.trim();
+
+      const response = await apiClient.post("/api/brands", payload);
+
+      if (response.status === 201) {
+        toast.success("Brand created successfully");
+        setNewBrandName("");
+        setNewBrandImage("");
+        fetchBrands();
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.error || "Failed to create brand");
+      }
+    } catch (error) {
+      console.error("Error creating brand:", error);
+      toast.error("Something went wrong");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -41,135 +100,186 @@ export default function AdminBrandsPage() {
   return (
     <div className="flex min-h-screen bg-gray-950">
       <DashboardSidebar />
-      
+
       <div className="flex-1 flex flex-col">
         <AdminHeader />
-        <main className="flex-1 p-8 overflow-auto">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-xl flex items-center justify-center shadow-lg shadow-cyan-500/30">
+        <main className="flex-1 p-6 lg:p-8 overflow-auto">
+          {/* Header */}
+          <div className="flex items-center gap-4 mb-8">
+            <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-cyan-500/20">
               <FaTags className="text-white text-xl" />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-white">Brands</h1>
-              <p className="text-gray-400 text-sm">{brands.length} total brands</p>
+              <p className="text-gray-400">Manage product brands</p>
             </div>
           </div>
-          
-          <Link href="/admin/brands/new">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-semibold rounded-xl shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 transition-shadow"
-            >
-              <FaPlus className="text-sm" />
-              Add Brand
-            </motion.button>
-          </Link>
-        </div>
 
-        {/* Search */}
-        <div className="mb-6">
-          <div className="relative max-w-md">
-            <FaMagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
-            <input
-              type="text"
-              placeholder="Search brands..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all"
-            />
-          </div>
-        </div>
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
 
-        {/* Table */}
-        <div className="bg-gray-900/50 border border-gray-800 rounded-2xl overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-gray-800/50 border-b border-gray-700">
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Name</th>
-                  <th className="px-6 py-4 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-800">
-                {loading ? (
-                  [...Array(5)].map((_, i) => (
-                    <tr key={i} className="animate-pulse">
-                      <td className="px-6 py-4"><div className="w-32 h-4 bg-gray-800 rounded" /></td>
-                      <td className="px-6 py-4"><div className="w-20 h-8 bg-gray-800 rounded-lg ml-auto" /></td>
-                    </tr>
-                  ))
-                ) : filteredBrands.length === 0 ? (
-                  <tr>
-                    <td colSpan={2} className="px-6 py-16 text-center">
-                      <div className="flex flex-col items-center">
-                        <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mb-4">
-                          <FaTags className="text-gray-600 text-2xl" />
-                        </div>
-                        <p className="text-gray-400 font-medium">No brands found</p>
-                        <p className="text-gray-500 text-sm mt-1">Create your first brand to get started</p>
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  <AnimatePresence>
-                    {filteredBrands.map((brand, index) => (
-                      <motion.tr
+            {/* LEFT COLUMN: LIST */}
+            <div className="space-y-6">
+              {/* Search */}
+              <div className="relative">
+                <FaMagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+                <input
+                  type="text"
+                  placeholder="Search brands..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-11 pr-4 py-3 bg-gray-900/50 border border-gray-800 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 transition-all"
+                />
+              </div>
+
+              {/* Brands List */}
+              <div className="grid gap-3">
+                <AnimatePresence>
+                  {loading ? (
+                    [...Array(3)].map((_, i) => (
+                      <div key={i} className="h-20 bg-gray-900/50 rounded-xl animate-pulse border border-gray-800" />
+                    ))
+                  ) : filteredBrands.length === 0 ? (
+                    <div className="text-center py-12 bg-gray-900/30 rounded-xl border border-gray-800 border-dashed">
+                      <FaTags className="mx-auto text-3xl text-gray-600 mb-3" />
+                      <p className="text-gray-400">No brands found</p>
+                    </div>
+                  ) : (
+                    filteredBrands.map((brand, index) => (
+                      <motion.div
                         key={brand.id}
-                        initial={{ opacity: 0, y: 10 }}
+                        initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        transition={{ delay: index * 0.02 }}
-                        className="group hover:bg-gray-800/30 transition-colors"
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ delay: index * 0.05 }}
+                        className="group bg-gray-900/50 hover:bg-gray-900 border border-gray-800 hover:border-cyan-500/30 rounded-xl p-4 transition-all duration-300"
                       >
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-lg flex items-center justify-center">
-                              <span className="text-cyan-400 font-bold">{brand.name.charAt(0).toUpperCase()}</span>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center overflow-hidden border border-gray-700">
+                              {brand.imageUrl ? (
+                                <img src={brand.imageUrl} alt={brand.name} className="w-full h-full object-contain p-1" />
+                              ) : (
+                                <span className="text-gray-400 font-bold text-lg">
+                                  {brand.name.charAt(0)}
+                                </span>
+                              )}
                             </div>
-                            <span className="text-white font-medium">{brand.name}</span>
+                            <div>
+                              <h3 className="text-white font-medium">
+                                {brand.name}
+                              </h3>
+                              {brand.imageUrl && (
+                                <a href={brand.imageUrl} target="_blank" rel="noreferrer" className="text-xs text-blue-400 hover:underline flex items-center gap-1 mt-1">
+                                  <FaImage className="text-[10px]" /> View Logo
+                                </a>
+                              )}
+                            </div>
                           </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center justify-end gap-2">
+
+                          <div className="flex items-center gap-2">
                             <Link href={`/admin/brands/${brand.id}`}>
-                              <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                className="p-2.5 bg-gray-800 hover:bg-blue-500/20 text-gray-400 hover:text-blue-400 rounded-lg transition-colors"
-                              >
+                              <button className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors">
                                 <FaPen className="text-sm" />
-                              </motion.button>
+                              </button>
                             </Link>
-                            <motion.button
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              onClick={() => remove(brand.id)}
-                              className="p-2.5 bg-gray-800 hover:bg-red-500/20 text-gray-400 hover:text-red-400 rounded-lg transition-colors"
+                            <button
+                              onClick={() => deleteBrand(brand.id)}
+                              className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
                             >
                               <FaTrash className="text-sm" />
-                            </motion.button>
+                            </button>
                           </div>
-                        </td>
-                      </motion.tr>
-                    ))}
-                  </AnimatePresence>
-                )}
-              </tbody>
-            </table>
-          </div>
-          
-          {filteredBrands.length > 0 && (
-            <div className="px-6 py-4 bg-gray-800/30 border-t border-gray-800">
-              <p className="text-gray-400 text-sm">
-                Showing <span className="text-white font-medium">{filteredBrands.length}</span> of <span className="text-white font-medium">{brands.length}</span> brands
-              </p>
+                        </div>
+                      </motion.div>
+                    ))
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
-          )}
-        </div>
-      </main>
+
+            {/* RIGHT COLUMN: CREATE FORM */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="bg-gray-900/50 border border-gray-800 rounded-2xl p-6 sticky top-8"
+            >
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-cyan-500/10 rounded-lg">
+                  <FaPlus className="text-cyan-500" />
+                </div>
+                <h2 className="text-lg font-bold text-white">Add New Brand</h2>
+              </div>
+
+              <form onSubmit={handleCreateBrand} className="space-y-6">
+                <div className="form-control w-full">
+                  <label className="label">
+                    <span className="label-text text-gray-400">Brand Name *</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g., Sony, Canon"
+                    className="input input-bordered bg-gray-800 border-gray-700 text-white focus:outline-none focus:border-cyan-500"
+                    value={newBrandName}
+                    onChange={(e) => setNewBrandName(e.target.value)}
+                  />
+                </div>
+
+                <div className="form-control w-full">
+                  <label className="label">
+                    <span className="label-text text-gray-400">Logo URL (Optional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="https://..."
+                    className="input input-bordered bg-gray-800 border-gray-700 text-white focus:outline-none focus:border-cyan-500"
+                    value={newBrandImage}
+                    onChange={(e) => setNewBrandImage(e.target.value)}
+                  />
+
+                  <div className="mt-2">
+                    <p className="text-xs text-gray-500 mb-2">Or upload an image:</p>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="file-input file-input-bordered file-input-sm w-full bg-gray-800 border-gray-700 text-gray-300"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            setNewBrandImage(reader.result as string);
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                  </div>
+                  {newBrandImage && (
+                    <div className="mt-2 text-xs text-gray-500">
+                      Preview: <div className="inline-block align-middle w-6 h-6 ml-2 bg-white rounded overflow-hidden"><img src={newBrandImage} className="w-full h-full object-contain" onError={(e) => (e.currentTarget.style.display = 'none')} /></div>
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="btn w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white border-none"
+                >
+                  {isSubmitting ? (
+                    <span className="loading loading-spinner" />
+                  ) : (
+                    <>
+                      Create Brand <FaArrowRight className="ml-2" />
+                    </>
+                  )}
+                </button>
+              </form>
+            </motion.div>
+
+          </div>
+        </main>
       </div>
     </div>
   );

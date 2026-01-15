@@ -133,11 +133,11 @@ const getUser = asyncHandler(async (request, response) => {
       id: id,
     },
   });
-  
+
   if (!user) {
     throw new AppError("User not found", 404);
   }
-  
+
   // Exclude password from response
   return response.status(200).json(excludePassword(user));
 });
@@ -154,11 +154,11 @@ const getUserByEmail = asyncHandler(async (request, response) => {
       email: email,
     },
   });
-  
+
   if (!user) {
     throw new AppError("User not found", 404);
   }
-  
+
   // Exclude password from response
   return response.status(200).json(excludePassword(user));
 });

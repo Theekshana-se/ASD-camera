@@ -14,6 +14,7 @@ const nextConfig = {
       { protocol: 'http', hostname: '127.0.0.1', port: '3001' },
       { protocol: 'http', hostname: 'localhost', port: '3002' },
       { protocol: 'http', hostname: '127.0.0.1', port: '3002' },
+      { protocol: 'http', hostname: 'localhost', port: '3000' },
 
       // Allow backend server
       { protocol: 'https', hostname: 'electronics-shop-backend-rfs4.onrender.com' },
