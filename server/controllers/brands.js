@@ -11,7 +11,8 @@ const getBrands = asyncHandler(async (request, response) => {
 });
 
 function isSafeUrl(u) {
-  return typeof u === "string" && /^https:\/\//i.test(u);
+  // Allow HTTPS URLs or Base64 data URIs
+  return typeof u === "string" && (/^https:\/\//i.test(u) || /^data:image\//i.test(u));
 }
 
 const createBrand = asyncHandler(async (request, response) => {

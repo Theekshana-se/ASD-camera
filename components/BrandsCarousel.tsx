@@ -52,25 +52,28 @@ export default function BrandsCarousel() {
     const load = async () => {
       setLoading(true);
       try {
-        const res = await apiClient.get("/api/merchants");
+        const res = await apiClient.get("/api/brands");
         if (res.ok) {
           const data = await res.json();
           const arr = (Array.isArray(data) ? data : [])
-            .filter((m: any) => m?.image && m?.status === "ACTIVE")
-            .map((m: any) => ({
-              id: m.id,
-              imageUrl: m.image,
-              alt: m.name,
-              href: `/shop?merchant=${encodeURIComponent(m.id)}`, // Assuming shop supports merchant filter or placeholder
+            .filter((b: any) => b?.imageUrl) // Filter brands with images
+            .map((b: any) => ({
+              id: b.id,
+              imageUrl: b.imageUrl,
+              alt: b.name,
+              href: `/shop?brand=${encodeURIComponent(b.id)}`,
               active: true,
             }));
-          setItems(arr);
+
+          // Deduplicate by ID just in case
+          const uniqueItems = Array.from(new Map(arr.map((item: any) => [item.id, item])).values()) as LogoItem[];
+          setItems(uniqueItems);
         } else {
-          console.error("Failed to fetch merchants");
+          console.error("Failed to fetch brands");
           setItems([]);
         }
       } catch (e) {
-        console.error("Error loading merchants:", e);
+        console.error("Error loading brands:", e);
         setItems([]);
       } finally {
         setLoading(false);
@@ -82,7 +85,7 @@ export default function BrandsCarousel() {
   const settings = {
     arrows: true,
     dots: true,
-    infinite: true,
+    infinite: items.length > 4, // Only loop if enough items
     speed: 600,
     slidesToShow: 5,
     slidesToScroll: 1,
@@ -90,9 +93,9 @@ export default function BrandsCarousel() {
     autoplaySpeed: 3000,
     pauseOnHover: true,
     responsive: [
-      { breakpoint: 1280, settings: { slidesToShow: 4, slidesToScroll: 1 } },
-      { breakpoint: 1024, settings: { slidesToShow: 3, slidesToScroll: 1 } },
-      { breakpoint: 640, settings: { slidesToShow: 2, slidesToScroll: 1 } },
+      { breakpoint: 1280, settings: { slidesToShow: Math.min(items.length, 4), slidesToScroll: 1, infinite: items.length > 3 } },
+      { breakpoint: 1024, settings: { slidesToShow: Math.min(items.length, 3), slidesToScroll: 1, infinite: items.length > 2 } },
+      { breakpoint: 640, settings: { slidesToShow: Math.min(items.length, 2), slidesToScroll: 1, infinite: items.length > 1 } },
     ],
     nextArrow: <NextArrow />,
     prevArrow: <PrevArrow />,

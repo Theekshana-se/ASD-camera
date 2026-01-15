@@ -129,9 +129,9 @@ export default function MerchantDetailPage({
   };
 
   const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this merchant? This cannot be undone.")) {
-      return;
-    }
+    // if (!confirm("Are you sure you want to delete this merchant? This cannot be undone.")) {
+    //   return;
+    // }
 
     try {
       const response = await apiClient.delete(`/api/merchants/${id}`);

@@ -47,7 +47,7 @@ export default function AdminBrandsPage() {
   }, []);
 
   const deleteBrand = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this brand?")) return;
+    // if (!confirm("Are you sure you want to delete this brand?")) return;
     try {
       const res = await apiClient.delete(`/api/brands/${id}`);
       if (res.status === 204) {
@@ -236,6 +236,25 @@ export default function AdminBrandsPage() {
                     value={newBrandImage}
                     onChange={(e) => setNewBrandImage(e.target.value)}
                   />
+
+                  <div className="mt-2">
+                    <p className="text-xs text-gray-500 mb-2">Or upload an image:</p>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="file-input file-input-bordered file-input-sm w-full bg-gray-800 border-gray-700 text-gray-300"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            setNewBrandImage(reader.result as string);
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                  </div>
                   {newBrandImage && (
                     <div className="mt-2 text-xs text-gray-500">
                       Preview: <div className="inline-block align-middle w-6 h-6 ml-2 bg-white rounded overflow-hidden"><img src={newBrandImage} className="w-full h-full object-contain" onError={(e) => (e.currentTarget.style.display = 'none')} /></div>

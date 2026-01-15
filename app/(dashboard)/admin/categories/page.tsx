@@ -48,7 +48,7 @@ const DashboardCategory = () => {
   }, []);
 
   const deleteCategory = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this category?")) return;
+    // if (!confirm("Are you sure you want to delete this category?")) return;
 
     console.log("Attempting to delete category:", id);
     const toastId = toast.loading("Deleting category...");

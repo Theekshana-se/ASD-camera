@@ -116,6 +116,22 @@ export default function MerchantPage() {
     }
   };
 
+  const deleteMerchant = async (id: string) => {
+    // if (!confirm("Are you sure you want to delete this merchant?")) return;
+    try {
+      const response = await apiClient.delete(`/api/merchants/${id}`);
+      if (response.ok) {
+        toast.success("Merchant deleted successfully");
+        setMerchants((prev) => prev.filter((m) => m.id !== id));
+      } else {
+        toast.error("Failed to delete merchant");
+      }
+    } catch (error) {
+      console.error("Error deleting merchant:", error);
+      toast.error("Failed to delete merchant");
+    }
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-950">
       <DashboardSidebar />
@@ -195,8 +211,8 @@ export default function MerchantPage() {
                               <div className="flex items-center justify-between mb-1">
                                 <h3 className="text-white font-semibold truncate pr-2">{merchant.name}</h3>
                                 <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium border ${merchant.status === 'ACTIVE'
-                                    ? 'bg-green-500/10 text-green-400 border-green-500/20'
-                                    : 'bg-red-500/10 text-red-400 border-red-500/20'
+                                  ? 'bg-green-500/10 text-green-400 border-green-500/20'
+                                  : 'bg-red-500/10 text-red-400 border-red-500/20'
                                   }`}>
                                   {merchant.status}
                                 </span>
@@ -225,6 +241,13 @@ export default function MerchantPage() {
                                   >
                                     <FaPen className="text-xs" />
                                   </Link>
+                                  <button
+                                    onClick={() => deleteMerchant(merchant.id)}
+                                    className="p-1.5 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-colors"
+                                    title="Delete"
+                                  >
+                                    <FaTrash className="text-xs" />
+                                  </button>
                                 </div>
                               </div>
                             </div>
