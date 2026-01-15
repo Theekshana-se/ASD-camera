@@ -17,6 +17,16 @@ type Logo = {
   active: boolean;
 };
 
+// Helper: Convert file to Base64
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function ClientLogosAdminPage() {
   const [items, setItems] = useState<Logo[]>([]);
   const [form, setForm] = useState<Partial<Logo>>({ active: true, order: 0 });
@@ -24,21 +34,21 @@ export default function ClientLogosAdminPage() {
 
   const load = async () => {
     setLoading(true);
-    const res = await apiClient.get("/api/client-logos");
+    const res = await apiClient.get(`/api/client-logos?t=${Date.now()}`, { cache: "no-store" });
     const data = await res.json();
     setItems(Array.isArray(data) ? data : []);
     setLoading(false);
   };
-  
+
   useEffect(() => { load(); }, []);
 
   const create = async () => {
     if (!form.imageUrl) { toast.error("Image URL required"); return; }
     const res = await apiClient.post("/api/client-logos", form);
-    if (res.status === 201) { 
-      toast.success("Logo added"); 
-      setForm({ active: true, order: 0 }); 
-      load(); 
+    if (res.status === 201) {
+      toast.success("Logo added");
+      setForm({ active: true, order: 0 });
+      load();
     } else {
       toast.error("Failed to add");
     }
@@ -48,47 +58,36 @@ export default function ClientLogosAdminPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const formData = new FormData();
-    formData.append("files", file);
-
     try {
-      const res = await fetch(`${apiClient.baseUrl}/api/client-logos/upload`, {
-        method: "POST",
-        body: formData,
-      });
-      const data = await res.json();
-      if (res.ok && data.urls && data.urls.length > 0) {
-        setForm({ ...form, imageUrl: data.urls[0] });
-        toast.success("Image uploaded");
-      } else {
-        toast.error("Upload failed");
-      }
+      const base64 = await fileToBase64(file);
+      setForm({ ...form, imageUrl: base64 });
+      toast.success("Image ready");
     } catch (err) {
       console.error(err);
-      toast.error("Upload error");
+      toast.error("Failed to process image");
     }
   };
 
   const update = async (id: string, patch: Partial<Logo>) => {
     const res = await apiClient.put(`/api/client-logos/${id}`, patch);
-    if (res.ok) { 
+    if (res.ok) {
       toast.success("Updated");
-      load(); 
+      load();
     }
   };
-  
+
   const remove = async (id: string) => {
     const res = await apiClient.delete(`/api/client-logos/${id}`);
-    if (res.status === 204) { 
-      toast.success("Deleted"); 
-      load(); 
+    if (res.status === 204) {
+      toast.success("Deleted");
+      load();
     }
   };
 
   return (
     <div className="flex min-h-screen bg-gray-950">
       <DashboardSidebar />
-      
+
       <div className="flex-1 flex flex-col">
         <AdminHeader />
         <main className="flex-1 p-8 overflow-auto">
@@ -118,7 +117,7 @@ export default function ClientLogosAdminPage() {
                 </div>
                 <h2 className="text-lg font-semibold text-white">Add Client Logo</h2>
               </div>
-              
+
               <div className="p-6 space-y-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-400">Logo Image URL</label>
@@ -136,13 +135,13 @@ export default function ClientLogosAdminPage() {
                   </div>
                   {form.imageUrl && (
                     <div className="mt-2 relative w-full h-24 rounded-lg overflow-hidden bg-gray-800 p-4 flex items-center justify-center">
-                      <Image 
-                        src={getImageUrl(form.imageUrl)} 
-                        alt="Preview" 
+                      <Image
+                        src={getImageUrl(form.imageUrl)}
+                        alt="Preview"
                         width={120}
                         height={60}
                         className="object-contain"
-                        onError={() => toast.error("Invalid image URL")}
+                        onError={() => console.log("Image load failed")}
                       />
                     </div>
                   )}
@@ -183,9 +182,8 @@ export default function ClientLogosAdminPage() {
                   <span className="text-sm font-medium text-gray-300">Active</span>
                   <button
                     onClick={() => setForm({ ...form, active: !form.active })}
-                    className={`relative w-12 h-6 rounded-full transition-colors ${
-                      form.active ? "bg-teal-500" : "bg-gray-700"
-                    }`}
+                    className={`relative w-12 h-6 rounded-full transition-colors ${form.active ? "bg-teal-500" : "bg-gray-700"
+                      }`}
                   >
                     <motion.div
                       animate={{ x: form.active ? 24 : 2 }}
@@ -221,7 +219,7 @@ export default function ClientLogosAdminPage() {
                 </div>
                 <h2 className="text-lg font-semibold text-white">Client Logos</h2>
               </div>
-              
+
               <div className="p-6">
                 {loading ? (
                   <div className="grid grid-cols-2 gap-3">
@@ -250,9 +248,9 @@ export default function ClientLogosAdminPage() {
                           className="group bg-gray-800/30 border border-gray-700 rounded-xl p-4 hover:bg-gray-800/50 transition-colors"
                         >
                           <div className="relative w-full h-20 rounded-lg overflow-hidden bg-gray-800/50 flex items-center justify-center mb-3">
-                            <Image 
-                              src={item.imageUrl} 
-                              alt={item.alt || "Client logo"} 
+                            <Image
+                              src={item.imageUrl}
+                              alt={item.alt || "Client logo"}
                               width={100}
                               height={50}
                               className="object-contain"
@@ -272,11 +270,10 @@ export default function ClientLogosAdminPage() {
                               </div>
                             )}
                             <div className="flex items-center justify-between pt-2">
-                              <span className={`text-xs px-2 py-0.5 rounded-full ${
-                                item.active 
-                                  ? "bg-green-500/10 text-green-400" 
+                              <span className={`text-xs px-2 py-0.5 rounded-full ${item.active
+                                  ? "bg-green-500/10 text-green-400"
                                   : "bg-gray-500/10 text-gray-400"
-                              }`}>
+                                }`}>
                                 {item.active ? "Active" : "Inactive"}
                               </span>
                               <div className="flex items-center gap-1">

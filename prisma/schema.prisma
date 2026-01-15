@@ -152,6 +152,7 @@ model Merchant {
   email       String?
   phone       String?
   address     String?
+  image       String?
   status      String   @default("ACTIVE")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -233,6 +234,7 @@ model SiteSettings {
   heroImageUrl       String?
   noticeBarText      String?
   noticeBarEnabled   Boolean  @default(false)
+  noticeBarAnimationEnabled Boolean @default(true)
   showPopupEnabled   Boolean  @default(true)
   footerSale         Json?
   footerAbout        Json?
@@ -246,6 +248,7 @@ model SiteSettings {
   whatsappNumber     String?
   whatsappEnabled    Boolean  @default(false)
   messengerEnabled   Boolean  @default(false)
+  messengerUsername  String?
   adminMessengerPsid String?
   updatedAt          DateTime @updatedAt
 }

@@ -27,7 +27,7 @@ import { useWishlistStore } from "@/app/_zustand/wishlistStore";
 import { useProductStore } from "@/app/_zustand/store";
 import apiClient from "@/lib/api";
 import { categoryMenuList } from "@/lib/utils";
-import { FaBars } from "react-icons/fa6";
+import { FaBars, FaHome, FaInfoCircle, FaUsers, FaTags, FaPhoneAlt } from "react-icons/fa";
 const CategoryMegaMenu = dynamic(() => import("./CategoryMegaMenu"), { ssr: false, loading: () => <div className="h-12 border-t border-gray-200 bg-white" /> });
 
 type Settings = {
@@ -37,15 +37,13 @@ type Settings = {
 const Header = ({
   settings,
 }: {
-  settings?: { logoUrl?: string; contactPhone?: string; contactEmail?: string; noticeBarText?: string; noticeBarEnabled?: boolean };
+  settings?: { logoUrl?: string; contactPhone?: string; contactEmail?: string; noticeBarText?: string; noticeBarEnabled?: boolean; noticeBarAnimationEnabled?: boolean };
 }) => {
   const { data: session } = useSession();
   const pathname = usePathname();
   const router = useRouter();
   const { setWishlist, wishQuantity } = useWishlistStore();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [hideHeader, setHideHeader] = useState(false);
-  const [lastY, setLastY] = useState(0);
 
   const handleLogout = () => {
     setTimeout(() => signOut(), 1000);
@@ -68,7 +66,7 @@ const Header = ({
     }[] = [];
 
     return; // temporary disable wishlist fetching
-    
+
     wishlist.map((item: any) =>
       productArray.push({
         id: item?.product?.id,
@@ -89,204 +87,200 @@ const Header = ({
     router.prefetch("/admin");
   }, [router]);
 
-  useEffect(() => {
-    const onScroll = () => {
-      const y = window.scrollY || 0;
-      const goingDown = y > lastY;
-      const threshold = 50;
-      setHideHeader(goingDown && y > threshold);
-      setLastY(y);
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [lastY]);
+
 
   const navLinks = [
-    { name: "Home", href: "/" },
-    { name: "About Us", href: "/about" },
-    { name: "Our Clients", href: "/clients" },
-    { name: "Promotions", href: "/promotions" },
-    { name: "Contact Us", href: "/contact" },
+    { name: "Home", href: "/", icon: <FaHome className="text-lg" /> },
+    { name: "About Us", href: "/about", icon: <FaInfoCircle className="text-lg" /> },
+    { name: "Our Clients", href: "/clients", icon: <FaUsers className="text-lg" /> },
+    { name: "Promotions", href: "/promotions", icon: <FaTags className="text-lg" /> },
+    { name: "Contact Us", href: "/contact", icon: <FaPhoneAlt className="text-lg" /> },
   ];
 
   return (
-    <header className={`bg-white/95 backdrop-blur border-b border-[#E5E7EB] sticky top-0 z-50 transition-transform duration-200 ${hideHeader ? "-translate-y-full" : "translate-y-0"}`}>
-      <HeaderTop
-        noticeBarEnabled={settings?.noticeBarEnabled}
-        noticeBarText={settings?.noticeBarText}
-      />
+    <>
+      <header className="bg-white/95 backdrop-blur border-b border-[#E5E7EB] relative z-[100]">
+        <HeaderTop
+          noticeBarEnabled={settings?.noticeBarEnabled}
+          noticeBarText={settings?.noticeBarText}
+          noticeBarAnimationEnabled={settings?.noticeBarAnimationEnabled}
+        />
 
-      {/* Normal website header */}
-      {pathname.startsWith("/admin") === false && (
-        <div className="bg-transparent px-16 max-[1320px]:px-16 max-md:px-6 max-w-screen-2xl mx-auto">
-          <div className="flex items-center justify-between py-3 gap-x-6">
-            <Link href="/" prefetch className="flex items-center gap-x-3">
+        {/* Normal website header */}
+        {pathname.startsWith("/admin") === false && (
+          <div className="bg-transparent px-16 max-[1320px]:px-16 max-md:px-6 max-w-screen-2xl mx-auto">
+            <div className="relative z-50 flex items-center justify-between py-3 gap-x-6">
+              <Link href="/" prefetch className="flex items-center gap-x-3">
+                <Image
+                  src={settings?.logoUrl || "/logo.png"}
+                  width={500}
+                  height={500}
+                  alt="ASD Camera Rent logo"
+                  className="h-14 w-auto object-contain"
+                  priority
+                  sizes="(max-width: 1023px) 224px, 300px"
+                />
+                <Image
+                  src="/Flag_of_Sri_Lanka.gif"
+                  alt="Sri Lankan flag"
+                  width={48}
+                  height={48}
+                  unoptimized
+                  className="h-12 w-auto object-contain"
+                />
+              </Link>
+              <div className="hidden lg:flex flex-1 items-center justify-end text-[#1A1F2E]">
+                <div className="flex items-center gap-x-3 font-semibold">
+                  <span className="flex items-center rounded-full bg-[#FF1F1F]/10 px-3 py-1 text-[#FF1F1F] ring-1 ring-[#FF1F1F]/20 transition hover:scale-[1.02]">24/7 Hotline</span>
+                  <span>{settings?.contactPhone || "+94 11 7253 111"}</span>
+                </div>
+              </div>
+
+              <button
+                className="lg:hidden p-2 rounded-full bg-[#FF1F1F] text-white shadow"
+                aria-label="Open menu"
+                onClick={() => setMobileOpen((v) => !v)}
+              >
+                <FaBars className="w-6 h-6" />
+              </button>
+
+              <div className="flex gap-x-6 items-center">
+                <NotificationBell />
+                <HeartElement wishQuantity={wishQuantity} />
+                <CartElement />
+                {!session && (
+                  <div className="hidden md:flex items-center gap-x-3">
+                    <Link href="/login" prefetch className="text-sm font-semibold text-[#1A1F2E] hover:text-[#FF1F1F] transition">Login</Link>
+                    <Link href="/register" prefetch className="text-sm font-semibold text-[#1A1F2E] hover:text-[#FF1F1F] transition">Register</Link>
+                  </div>
+                )}
+                {session && (
+                  <div className="hidden md:flex items-center gap-x-3">
+                    <button onClick={handleLogout} className="text-sm font-semibold text-[#1A1F2E] hover:text-[#FF1F1F] transition">Logout</button>
+                  </div>
+                )}
+                {(session?.user as any)?.role === "admin" && (
+                  <Link
+                    href="/admin"
+                    prefetch
+                    className="px-3 py-1 rounded bg-[#FF1F1F] text-white text-sm hover:bg-red-700"
+                  >
+                    Admin
+                  </Link>
+                )}
+              </div>
+            </div>
+            {mobileOpen && (
+              <div className="lg:hidden border-t border-[#E5E7EB] py-2">
+                <div className="flex flex-wrap gap-2 justify-center px-2">
+                  {navLinks.map((l) => (
+                    <Link
+                      key={l.href}
+                      href={l.href}
+                      prefetch
+                      onClick={() => setMobileOpen(false)}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-full text-base font-semibold whitespace-nowrap transition-all ${pathname === l.href
+                        ? "bg-[#FF1F1F] text-white shadow"
+                        : "bg-[#F3F4F6] text-[#1A1F2E] hover:text-[#FF1F1F]"
+                        }`}
+                    >
+                      {l.icon}
+                      {l.name}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div className="py-3">
+              <div className="flex items-center gap-6">
+                <nav className="hidden lg:flex items-center gap-x-3 flex-1">
+                  {navLinks.map((l) => (
+                    <MagneticLink
+                      key={l.href}
+                      href={l.href}
+                      className={`px-4 py-2 rounded-full text-base font-semibold transition-all ${pathname === l.href
+                        ? "bg-[#FF1F1F] text-white shadow"
+                        : "bg-[#F3F4F6] text-[#1A1F2E] hover:text-[#FF1F1F] ring-1 ring-[#E5E7EB]"
+                        }`}
+                    >
+                      <span className="flex items-center gap-2 whitespace-nowrap">
+                        {l.icon}
+                        {l.name}
+                      </span>
+                    </MagneticLink>
+                  ))}
+                </nav>
+                <div className="w-full lg:w-[480px] ml-auto">
+                  <SearchInput />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+
+
+        {/* Admin dashboard header */}
+        {pathname.startsWith("/admin") === true && (
+          <div className="flex justify-between h-32 bg-transparent items-center px-16 max-[1320px]:px-10 max-w-screen-2xl mx-auto max-[400px]:px-5">
+            <Link href="/" className="flex items-center gap-x-2">
               <Image
                 src={settings?.logoUrl || "/logo.png"}
-                width={500}
-                height={500}
+                width={130}
+                height={130}
                 alt="ASD Camera Rent logo"
-                className="h-14 w-auto object-contain"
+                className="h-12 w-auto object-contain"
                 priority
-                sizes="(max-width: 1023px) 224px, 300px"
               />
               <Image
                 src="/Flag_of_Sri_Lanka.gif"
                 alt="Sri Lankan flag"
-                width={48}
-                height={48}
+                width={40}
+                height={40}
                 unoptimized
-                className="h-12 w-auto object-contain"
+                className="h-10 w-10 object-contain"
               />
             </Link>
-            <div className="hidden lg:flex flex-1 items-center justify-end text-[#1A1F2E]">
-              <div className="flex items-center gap-x-3 font-semibold">
-                <span className="flex items-center rounded-full bg-[#FF1F1F]/10 px-3 py-1 text-[#FF1F1F] ring-1 ring-[#FF1F1F]/20 transition hover:scale-[1.02]">24/7 Hotline</span>
-                <span>{settings?.contactPhone || "+94 11 7253 111"}</span>
-              </div>
-            </div>
 
-            <button
-              className="lg:hidden p-2 rounded-full bg-[#FF1F1F] text-white shadow"
-              aria-label="Open menu"
-              onClick={() => setMobileOpen((v) => !v)}
-            >
-              <FaBars className="w-6 h-6" />
-            </button>
-
-            <div className="flex gap-x-6 items-center">
+            <div className="flex gap-x-5 items-center">
               <NotificationBell />
-              <HeartElement wishQuantity={wishQuantity} />
-              <CartElement />
-              {!session && (
-                <div className="hidden md:flex items-center gap-x-3">
-                  <Link href="/login" prefetch className="text-sm font-semibold text-[#1A1F2E] hover:text-[#FF1F1F] transition">Login</Link>
-                  <Link href="/register" prefetch className="text-sm font-semibold text-[#1A1F2E] hover:text-[#FF1F1F] transition">Register</Link>
-                </div>
-              )}
-              {session && (
-                <div className="hidden md:flex items-center gap-x-3">
-                  <button onClick={handleLogout} className="text-sm font-semibold text-[#1A1F2E] hover:text-[#FF1F1F] transition">Logout</button>
-                </div>
-              )}
-              {(session?.user as any)?.role === "admin" && (
-                <Link
-                  href="/admin"
-                  prefetch
-                  className="px-3 py-1 rounded bg-[#FF1F1F] text-white text-sm hover:bg-red-700"
-                >
-                  Admin
-                </Link>
-              )}
-            </div>
-          </div>
-          {mobileOpen && (
-            <div className="lg:hidden border-t border-[#E5E7EB] py-2">
-              <div className="flex flex-wrap gap-2 justify-center px-2">
-                {navLinks.map((l) => (
-                  <Link
-                    key={l.href}
-                    href={l.href}
-                    prefetch
-                    onClick={() => setMobileOpen(false)}
-                    className={`px-4 py-2 rounded-full text-base font-semibold transition-all ${
-                      pathname === l.href
-                        ? "bg-[#FF1F1F] text-white shadow"
-                        : "bg-[#F3F4F6] text-[#1A1F2E] hover:text-[#FF1F1F]"
-                    }`}
-                  >
-                    {l.name}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
-          <div className="py-3">
-            <div className="flex items-center gap-6">
-              <nav className="hidden lg:flex items-center gap-x-3 flex-1">
-                {navLinks.map((l) => (
-                  <MagneticLink
-                    key={l.href}
-                    href={l.href}
-                    className={`px-4 py-2 rounded-full text-base font-semibold transition-all ${
-                      pathname === l.href
-                        ? "bg-[#FF1F1F] text-white shadow"
-                        : "bg-[#F3F4F6] text-[#1A1F2E] hover:text-[#FF1F1F] ring-1 ring-[#E5E7EB]"
-                    }`}
-                  >
-                    {l.name}
-                  </MagneticLink>
-                ))}
-              </nav>
-              <div className="w-full lg:w-[480px] ml-auto">
-                <SearchInput />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
+              <div className="dropdown dropdown-end">
+                <div tabIndex={0} role="button" className="w-10">
+                  <Image
+                    src="/randomuser.jpg"
+                    alt="random profile photo"
+                    width={30}
+                    height={30}
+                    className="w-full h-full rounded-full"
+                  />
+                </div>
+
+                <ul
+                  tabIndex={0}
+                  className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52"
+                >
+                  <li>
+                    <Link href="/admin">Dashboard</Link>
+                  </li>
+                  <li>
+                    <a>Profile</a>
+                  </li>
+                  <li onClick={handleLogout}>
+                    <a href="#">Logout</a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        )}
+      </header>
       {pathname.startsWith("/admin") === false && (
         <div>
           <CategoryMegaMenu />
         </div>
       )}
-
-      {/* Admin dashboard header */}
-      {pathname.startsWith("/admin") === true && (
-        <div className="flex justify-between h-32 bg-transparent items-center px-16 max-[1320px]:px-10 max-w-screen-2xl mx-auto max-[400px]:px-5">
-          <Link href="/" className="flex items-center gap-x-2">
-            <Image
-              src={settings?.logoUrl || "/logo.png"}
-              width={130}
-              height={130}
-              alt="ASD Camera Rent logo"
-              className="h-12 w-auto object-contain"
-              priority
-            />
-            <Image
-              src="/Flag_of_Sri_Lanka.gif"
-              alt="Sri Lankan flag"
-              width={40}
-              height={40}
-              unoptimized
-              className="h-10 w-10 object-contain"
-            />
-          </Link>
-
-          <div className="flex gap-x-5 items-center">
-            <NotificationBell />
-
-            <div className="dropdown dropdown-end">
-              <div tabIndex={0} role="button" className="w-10">
-                <Image
-                  src="/randomuser.jpg"
-                  alt="random profile photo"
-                  width={30}
-                  height={30}
-                  className="w-full h-full rounded-full"
-                />
-              </div>
-
-              <ul
-                tabIndex={0}
-                className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52"
-              >
-                <li>
-                  <Link href="/admin">Dashboard</Link>
-                </li>
-                <li>
-                  <a>Profile</a>
-                </li>
-                <li onClick={handleLogout}>
-                  <a href="#">Logout</a>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      )}
-    </header>
+    </>
   );
 };
 

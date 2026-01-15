@@ -57,7 +57,7 @@ const DashboardProductTable = () => {
     }
   };
 
-  const filteredProducts = products.filter(p => 
+  const filteredProducts = products.filter(p =>
     sanitize(p.title)?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     sanitize(p.manufacturer)?.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -82,29 +82,7 @@ const DashboardProductTable = () => {
 
   return (
     <div className="w-full">
-      {/* Header Section */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-500/30">
-            <FaBox className="text-white text-xl" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-white">Products</h1>
-            <p className="text-gray-400 text-sm">{products.length} total products</p>
-          </div>
-        </div>
-        
-        <Link href="/admin/products/new">
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold rounded-xl shadow-lg shadow-red-500/30 hover:shadow-red-500/50 transition-shadow"
-          >
-            <FaPlus className="text-sm" />
-            Add Product
-          </motion.button>
-        </Link>
-      </div>
+
 
       {/* Search and Filter Bar */}
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
@@ -136,11 +114,11 @@ const DashboardProductTable = () => {
               <tr className="bg-gray-800/50 border-b border-gray-700">
                 <th className="px-6 py-4 text-left">
                   <label className="relative flex items-center cursor-pointer">
-                    <input 
-                      type="checkbox" 
+                    <input
+                      type="checkbox"
                       checked={selectedProducts.size === filteredProducts.length && filteredProducts.length > 0}
                       onChange={toggleSelectAll}
-                      className="sr-only peer" 
+                      className="sr-only peer"
                     />
                     <div className="w-5 h-5 bg-gray-700 border border-gray-600 rounded peer-checked:bg-red-500 peer-checked:border-red-500 transition-all flex items-center justify-center">
                       {selectedProducts.size === filteredProducts.length && filteredProducts.length > 0 && (
@@ -192,7 +170,7 @@ const DashboardProductTable = () => {
               ) : (
                 <AnimatePresence>
                   {filteredProducts.map((product, index) => (
-                    <motion.tr 
+                    <motion.tr
                       key={product.id}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -202,11 +180,11 @@ const DashboardProductTable = () => {
                     >
                       <td className="px-6 py-4">
                         <label className="relative flex items-center cursor-pointer">
-                          <input 
-                            type="checkbox" 
+                          <input
+                            type="checkbox"
                             checked={selectedProducts.has(product.id)}
                             onChange={() => toggleSelect(product.id)}
-                            className="sr-only peer" 
+                            className="sr-only peer"
                           />
                           <div className="w-5 h-5 bg-gray-700 border border-gray-600 rounded peer-checked:bg-red-500 peer-checked:border-red-500 transition-all flex items-center justify-center">
                             {selectedProducts.has(product.id) && (
@@ -217,7 +195,7 @@ const DashboardProductTable = () => {
                           </div>
                         </label>
                       </td>
-                      
+
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-4">
                           <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-gray-800 flex-shrink-0">
@@ -226,8 +204,8 @@ const DashboardProductTable = () => {
                               src={
                                 product?.mainImage
                                   ? (product.mainImage.startsWith("data:") || product.mainImage.startsWith("http")
-                                      ? product.mainImage
-                                      : `/${product.mainImage}`)
+                                    ? product.mainImage
+                                    : `/${product.mainImage}`)
                                   : "/product_placeholder.jpg"
                               }
                               alt={sanitize(product?.title) || "Product image"}
@@ -240,7 +218,7 @@ const DashboardProductTable = () => {
                           </div>
                         </div>
                       </td>
-                      
+
                       <td className="px-6 py-4">
                         {product?.inStock ? (
                           <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-medium rounded-full">
@@ -254,11 +232,11 @@ const DashboardProductTable = () => {
                           </span>
                         )}
                       </td>
-                      
+
                       <td className="px-6 py-4">
                         <span className="text-white font-semibold">Rs.{Number(product?.price || 0).toLocaleString()}</span>
                       </td>
-                      
+
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end gap-2">
                           <Link href={`/admin/products/${product.id}`}>
@@ -287,7 +265,7 @@ const DashboardProductTable = () => {
             </tbody>
           </table>
         </div>
-        
+
         {/* Table Footer */}
         {filteredProducts.length > 0 && (
           <div className="px-6 py-4 bg-gray-800/30 border-t border-gray-800 flex items-center justify-between">

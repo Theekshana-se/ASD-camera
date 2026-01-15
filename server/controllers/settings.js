@@ -16,7 +16,7 @@ const getSettings = asyncHandler(async (req, res) => {
       const raw = await prisma.$runCommandRaw({ find: "SiteSettings", filter: {} });
       const first = Array.isArray(raw?.cursor?.firstBatch) ? raw.cursor.firstBatch[0] : null;
       fullDoc = first || null;
-    } catch {}
+    } catch { }
     const merged = fullDoc ? { ...settings, ...fullDoc } : settings;
     return res.status(200).json(merged || {});
   } catch (e) {
@@ -34,6 +34,7 @@ const upsertSettings = asyncHandler(async (req, res) => {
     heroImageUrl,
     noticeBarText,
     noticeBarEnabled,
+    noticeBarAnimationEnabled, // ADDED
     showPopupEnabled,
     footerSale,
     footerAbout,
@@ -47,6 +48,7 @@ const upsertSettings = asyncHandler(async (req, res) => {
     whatsappNumber,
     whatsappEnabled,
     messengerEnabled,
+    messengerUsername, // ADDED
     adminMessengerPsid,
   } = req.body || {};
 
@@ -59,6 +61,7 @@ const upsertSettings = asyncHandler(async (req, res) => {
     heroImageUrl: heroImageUrl || null,
     noticeBarText: noticeBarText || null,
     noticeBarEnabled: Boolean(noticeBarEnabled) || false,
+    noticeBarAnimationEnabled: noticeBarAnimationEnabled !== undefined ? !!noticeBarAnimationEnabled : true, // ADDED
     showPopupEnabled: showPopupEnabled !== undefined ? !!showPopupEnabled : undefined,
     footerSale: sanitizeArray(footerSale),
     footerAbout: sanitizeArray(footerAbout),
@@ -68,10 +71,11 @@ const upsertSettings = asyncHandler(async (req, res) => {
     asdCameraDescription: asdCameraDescription || null,
     asdCameraLocations: Array.isArray(asdCameraLocations) || (asdCameraLocations && typeof asdCameraLocations === 'object') ? asdCameraLocations : null,
     socialLinks: socialLinks && typeof socialLinks === 'object' ? socialLinks : null,
-    paymentMethods: Array.isArray(paymentMethods) ? paymentMethods.map((p)=>({ name: String(p?.name || ''), imageUrl: String(p?.imageUrl || '') })) : null,
+    paymentMethods: Array.isArray(paymentMethods) ? paymentMethods.map((p) => ({ name: String(p?.name || ''), imageUrl: String(p?.imageUrl || '') })) : null,
     whatsappNumber: whatsappNumber || null,
     whatsappEnabled: whatsappEnabled !== undefined ? !!whatsappEnabled : false,
     messengerEnabled: messengerEnabled !== undefined ? !!messengerEnabled : false,
+    messengerUsername: messengerUsername || null, // ADDED
     adminMessengerPsid: adminMessengerPsid || null,
   };
 
@@ -100,6 +104,7 @@ const upsertSettings = asyncHandler(async (req, res) => {
         footerHelp: data.footerHelp,
         noticeBarText: data.noticeBarText,
         noticeBarEnabled: data.noticeBarEnabled,
+        noticeBarAnimationEnabled: data.noticeBarAnimationEnabled, // ADDED
         showPopupEnabled: data.showPopupEnabled === undefined ? false : data.showPopupEnabled,
         asdCameraTitle: data.asdCameraTitle,
         asdCameraDescription: data.asdCameraDescription,
@@ -109,6 +114,7 @@ const upsertSettings = asyncHandler(async (req, res) => {
         whatsappNumber: data.whatsappNumber,
         whatsappEnabled: data.whatsappEnabled,
         messengerEnabled: data.messengerEnabled,
+        messengerUsername: data.messengerUsername, // ADDED
         adminMessengerPsid: data.adminMessengerPsid,
       },
     };
@@ -127,7 +133,7 @@ const upsertSettings = asyncHandler(async (req, res) => {
       const raw = await prisma.$runCommandRaw({ find: "SiteSettings", filter: {} });
       const first = Array.isArray(raw?.cursor?.firstBatch) ? raw.cursor.firstBatch[0] : null;
       saved = first || saved;
-    } catch {}
+    } catch { }
   } catch (e) {
     const updateDoc = {
       $set: {
@@ -143,6 +149,7 @@ const upsertSettings = asyncHandler(async (req, res) => {
         footerHelp: data.footerHelp,
         noticeBarText: data.noticeBarText,
         noticeBarEnabled: data.noticeBarEnabled,
+        noticeBarAnimationEnabled: data.noticeBarAnimationEnabled, // ADDED
         showPopupEnabled: data.showPopupEnabled === undefined ? false : data.showPopupEnabled,
         asdCameraTitle: data.asdCameraTitle,
         asdCameraDescription: data.asdCameraDescription,

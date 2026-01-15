@@ -41,33 +41,24 @@ export default function PromotionsPage() {
   useEffect(() => {
     const fetchBanners = async () => {
       try {
-        console.log("Fetching banners from API...");
         // Fetch all banners from the API
-        const res = await apiClient.get("/api/banners");
-        console.log("API Response status:", res.status);
-        
+        const res = await apiClient.get("/api/banners", { cache: "no-store" });
+
         if (res.ok) {
           const data = await res.json();
-          console.log("Fetched banners data:", data);
-          
+
           // Filter for active banners with position "promotion"
-          const activeBanners = Array.isArray(data) 
+          const activeBanners = Array.isArray(data)
             ? data.filter((b: Banner) => b.active && b.position === "promotion")
             : [];
-          
-          console.log("Active promotion banners:", activeBanners);
+
           setBanners(activeBanners.sort((a, b) => a.order - b.order));
         } else {
-          console.error("Failed to fetch banners, status:", res.status);
-          
-          // Show user-friendly error
-          if (res.status === 500) {
-            console.error("Server error - backend may be starting up or having issues");
-          }
+          // Set empty array so page still renders
+          setBanners([]);
         }
       } catch (error) {
         console.error("Failed to fetch banners", error);
-        // Set empty array so page still renders
         setBanners([]);
       } finally {
         setLoading(false);
@@ -83,7 +74,7 @@ export default function PromotionsPage() {
       <section className="relative h-[400px] w-full overflow-hidden flex items-center justify-center">
         {/* Abstract Background */}
         <div className="absolute inset-0 bg-gray-950">
-           <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1.5 }}
@@ -91,17 +82,17 @@ export default function PromotionsPage() {
           />
           {/* Animated Gradients */}
           <motion.div
-            animate={{ 
+            animate={{
               scale: [1, 1.2, 1],
-              opacity: [0.3, 0.5, 0.3], 
+              opacity: [0.3, 0.5, 0.3],
             }}
             transition={{ duration: 8, repeat: Infinity }}
             className="absolute top-0 right-0 w-[500px] h-[500px] bg-red-600/20 rounded-full blur-[100px] translate-x-1/3 -translate-y-1/3"
           />
           <motion.div
-            animate={{ 
+            animate={{
               scale: [1, 1.3, 1],
-              opacity: [0.2, 0.4, 0.2], 
+              opacity: [0.2, 0.4, 0.2],
             }}
             transition={{ duration: 10, repeat: Infinity, delay: 1 }}
             className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-600/20 rounded-full blur-[100px] -translate-x-1/3 translate-y-1/3"
@@ -122,11 +113,11 @@ export default function PromotionsPage() {
                 Exclusive Offers
               </span>
             </motion.div>
-            
+
             <motion.h1 variants={fadeInUp} className="text-5xl md:text-7xl font-bold text-white tracking-tight">
               Special <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500">Promotions</span>
             </motion.h1>
-            
+
             <motion.p variants={fadeInUp} className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto">
               Grab the best deals on premium camera equipment and accessories. Limited time offers you don&apos;t want to miss.
             </motion.p>
@@ -151,7 +142,7 @@ export default function PromotionsPage() {
             <p className="text-gray-500 mt-2">Check back soon for exciting new offers!</p>
           </div>
         ) : (
-          <motion.div 
+          <motion.div
             initial="hidden"
             animate="visible"
             variants={staggerContainer}
@@ -167,15 +158,15 @@ export default function PromotionsPage() {
                 {/* Banner Image */}
                 <div className="relative w-full h-full">
                   <Image
-                    src={banner.imageUrl}
+                    src={getImageUrl(banner.imageUrl)}
                     alt={banner.title || "Promotion"}
                     fill
                     className="object-cover transition-transform duration-700 group-hover:scale-110"
                   />
-                  
+
                   {/* Gradient Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-500" />
-                  
+
                   {/* Shine Effect */}
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none">
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
@@ -185,7 +176,7 @@ export default function PromotionsPage() {
                 {/* Content Overlay */}
                 <div className="absolute inset-0 p-6 flex flex-col justify-end">
                   {banner.title && (
-                    <motion.h3 
+                    <motion.h3
                       initial={{ opacity: 0, y: 20 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       className="text-white font-bold text-xl md:text-2xl drop-shadow-lg mb-2 z-10"
@@ -193,11 +184,11 @@ export default function PromotionsPage() {
                       {banner.title}
                     </motion.h3>
                   )}
-                  
+
                   {banner.href && (
                     <div className="flex items-center gap-2">
-                       <Link
-                        href={banner.href} 
+                      <Link
+                        href={banner.href}
                         className="inline-flex items-center gap-2 px-6 py-2 bg-white/10 backdrop-blur-md border border-white/30 text-white text-sm font-semibold rounded-full hover:bg-white hover:text-red-600 transition-all duration-300 z-10"
                       >
                         Shop Now <FaArrowRight />
@@ -234,9 +225,9 @@ export default function PromotionsPage() {
               Subscribe to our newsletter to receive instant notifications about new promotions, equipment arrivals, and exclusive discounts.
             </p>
             <div className="flex max-w-md mx-auto gap-2">
-              <input 
-                type="email" 
-                placeholder="Enter your email" 
+              <input
+                type="email"
+                placeholder="Enter your email"
                 className="flex-1 px-5 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 bg-white"
               />
               <button className="px-6 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-colors shadow-lg shadow-red-500/30">
@@ -245,10 +236,10 @@ export default function PromotionsPage() {
             </div>
           </motion.div>
         </div>
-        
-         {/* Background Decoration */}
-         <div className="absolute top-0 left-0 w-64 h-64 bg-red-500/5 rounded-full blur-3xl -ml-32 -mt-32" />
-         <div className="absolute bottom-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl -mr-32 -mb-32" />
+
+        {/* Background Decoration */}
+        <div className="absolute top-0 left-0 w-64 h-64 bg-red-500/5 rounded-full blur-3xl -ml-32 -mt-32" />
+        <div className="absolute bottom-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl -mr-32 -mb-32" />
       </section>
     </div>
   );

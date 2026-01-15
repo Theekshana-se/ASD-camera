@@ -12,8 +12,15 @@ function isAllowedMime(m) {
 }
 
 const listClientLogos = asyncHandler(async (req, res) => {
-  const items = await prisma.clientLogo.findMany({ orderBy: { order: "asc" } });
-  res.json(items);
+  try {
+    const items = await prisma.clientLogo.findMany({ orderBy: { order: "asc" } });
+    const validItems = items.filter(i => i.imageUrl && i.imageUrl.length > 5);
+    res.json(validItems);
+  } catch (error) {
+    console.error("List client logos failed (likely data corruption):", error);
+    // Return empty array to prevent 500 error
+    res.json([]);
+  }
 });
 
 const createClientLogo = asyncHandler(async (req, res) => {

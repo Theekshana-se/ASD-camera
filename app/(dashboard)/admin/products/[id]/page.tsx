@@ -16,14 +16,14 @@ const DashboardProductDetails = () => {
 
   type ProductExtended = Product & { brandId?: string; features?: string[]; availabilityStatus?: 'AVAILABLE' | 'UNDER_MAINTENANCE' | 'UNAVAILABLE' };
   const [product, setProduct] = useState<ProductExtended>();
-  const [brands, setBrands] = useState<{id: string; name: string}[]>([]);
+  const [brands, setBrands] = useState<{ id: string; name: string }[]>([]);
   const [categories, setCategories] = useState<Category[]>();
   type ImageItem = { imageID: string; productID: string; image: string };
-const [otherImages, setOtherImages] = useState<ImageItem[]>([]);
+  const [otherImages, setOtherImages] = useState<ImageItem[]>([]);
   const router = useRouter();
 
-  // functionality for deleting product
   const deleteProduct = async () => {
+    if (!confirm("Are you sure you want to delete this product?")) return;
     const requestOptions = {
       method: "DELETE",
     };
@@ -48,7 +48,6 @@ const [otherImages, setOtherImages] = useState<ImageItem[]>([]);
       });
   };
 
-  // functionality for updating product
   const updateProduct = async () => {
     if (
       product?.title === "" ||
@@ -79,7 +78,6 @@ const [otherImages, setOtherImages] = useState<ImageItem[]>([]);
     }
   };
 
-  // functionality for uploading main image file
   const uploadFile = async (file: any) => {
     const formData = new FormData();
     formData.append("uploadedFile", file);
@@ -101,7 +99,6 @@ const [otherImages, setOtherImages] = useState<ImageItem[]>([]);
     }
   };
 
-  // fetching main product data including other product images
   const fetchProductData = async () => {
     apiClient
       .get(`/api/products/${id}`)
@@ -119,7 +116,6 @@ const [otherImages, setOtherImages] = useState<ImageItem[]>([]);
     setOtherImages((currentImages) => images);
   };
 
-  // fetching all product categories. It will be used for displaying categories in select category input
   const fetchCategories = async () => {
     apiClient
       .get(`/api/categories`)
@@ -141,296 +137,291 @@ const [otherImages, setOtherImages] = useState<ImageItem[]>([]);
   }, [id]);
 
   return (
-    <div className="bg-white flex justify-start max-w-screen-2xl mx-auto xl:h-full max-xl:flex-col max-xl:gap-y-5">
+    <div className="flex min-h-screen bg-gray-950">
       <DashboardSidebar />
-      <div className="flex flex-col gap-y-7 xl:ml-5 w-full max-xl:px-5">
-        <h1 className="text-3xl font-semibold">Product details</h1>
-        {/* Product name input div - start */}
-        
-        <div>
-          <label className="form-control w-full max-w-xs">
-            <div className="label">
-              <span className="label-text">Product name:</span>
-            </div>
-            <input
-              type="text"
-              className="input input-bordered w-full max-w-xs"
-              value={product?.title || ""}
-              onChange={(e) =>
-                setProduct({ ...product!, title: e.target.value })
-              }
-            />
-          </label>
-        </div>
-        {/* Product name input div - end */}
-        {/* Product price input div - start */}
+      <div className="flex-1 p-6 lg:p-8 overflow-auto">
+        <h1 className="text-3xl font-bold text-white mb-8">Product Details</h1>
 
-        <div>
-          <label className="form-control w-full max-w-xs">
-            <div className="label">
-              <span className="label-text">Product price:</span>
-            </div>
-            <input
-              type="text"
-              className="input input-bordered w-full max-w-xs"
-              value={product?.price || ""}
-              onChange={(e) =>
-                setProduct({ ...product!, price: Number(e.target.value) })
-              }
-            />
-          </label>
-        </div>
-        {/* Product price input div - end */}
-        {/* Product rating input div - start */}
-        <div>
-          <label className="form-control w-full max-w-xs">
-            <div className="label">
-              <span className="label-text">Rating (0-5):</span>
-            </div>
-            <input
-              type="number"
-              min={0}
-              max={5}
-              step={1}
-              className="input input-bordered w-full max-w-xs"
-              value={product?.rating ?? 0}
-              onChange={(e) =>
-                setProduct({ ...product!, rating: Number(e.target.value) })
-              }
-            />
-          </label>
-        </div>
-        {/* Product rating input div - end */}
-        {/* Product discount input div - start */}
-        <div>
-          <label className="form-control w-full max-w-xs">
-            <div className="label">
-              <span className="label-text">Discount (%):</span>
-            </div>
-            <input
-              type="number"
-              min={0}
-              max={90}
-              step={1}
-              className="input input-bordered w-full max-w-xs"
-              value={product?.discount ?? 0}
-              onChange={(e) =>
-                setProduct({ ...product!, discount: Number(e.target.value) })
-              }
-            />
-          </label>
-        </div>
-        {/* Product discount input div - end */}
-        {/* Offer item toggle - start */}
-        <div>
-          <label className="label cursor-pointer">
-            <span className="label-text mr-3">Mark as offer item</span>
-            <input
-              type="checkbox"
-              className="checkbox"
-              checked={product?.isOfferItem ?? false}
-              onChange={(e) =>
-                setProduct({ ...product!, isOfferItem: e.target.checked })
-              }
-            />
-          </label>
-        </div>
-        {/* Offer item toggle - end */}
-        {/* Featured product toggle - start */}
-        <div>
-          <label className="label cursor-pointer">
-            <span className="label-text mr-3">Mark as featured product</span>
-            <input
-              type="checkbox"
-              className="checkbox"
-              checked={product?.isFeatured ?? false}
-              onChange={(e) =>
-                setProduct({ ...product!, isFeatured: e.target.checked })
-              }
-            />
-          </label>
-        </div>
-        {/* Featured product toggle - end */}
-        {/* Hot deal toggle - start */}
-        <div>
-          <label className="label cursor-pointer">
-            <span className="label-text mr-3">Mark as hot deal</span>
-            <input
-              type="checkbox"
-              className="checkbox"
-              checked={product?.isHotDeal ?? false}
-              onChange={(e) =>
-                setProduct({ ...product!, isHotDeal: e.target.checked })
-              }
-            />
-          </label>
-        </div>
-        {/* Hot deal toggle - end */}
-        {/* Product manufacturer input div - start */}
-        <div>
-          <label className="form-control w-full max-w-xs">
-            <div className="label">
-              <span className="label-text">Manufacturer:</span>
-            </div>
-            <input
-              type="text"
-              className="input input-bordered w-full max-w-xs"
-              value={product?.manufacturer || ""}
-              onChange={(e) =>
-                setProduct({ ...product!, manufacturer: e.target.value })
-              }
-            />
-          </label>
-        </div>
-        {/* Product manufacturer input div - end */}
-        {/* Product slug input div - start */}
+        <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-6 lg:p-8 space-y-6 max-w-4xl">
+          {/* Product name */}
+          <div>
+            <label className="form-control w-full">
+              <div className="label">
+                <span className="label-text text-gray-400">Product name:</span>
+              </div>
+              <input
+                type="text"
+                className="input input-bordered bg-gray-800 border-gray-700 text-white w-full"
+                value={product?.title || ""}
+                onChange={(e) =>
+                  setProduct({ ...product!, title: e.target.value })
+                }
+              />
+            </label>
+          </div>
 
-        <div>
-          <label className="form-control w-full max-w-xs">
-            <div className="label">
-              <span className="label-text">Slug:</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="form-control w-full">
+                <div className="label">
+                  <span className="label-text text-gray-400">Product price:</span>
+                </div>
+                <input
+                  type="number"
+                  className="input input-bordered bg-gray-800 border-gray-700 text-white w-full"
+                  value={product?.price || ""}
+                  onChange={(e) =>
+                    setProduct({ ...product!, price: Number(e.target.value) })
+                  }
+                />
+              </label>
             </div>
-            <input
-              type="text"
-              className="input input-bordered w-full max-w-xs"
-              value={
-                product?.slug ? convertSlugToURLFriendly(product?.slug) : ""
-              }
-              onChange={(e) =>
-                setProduct({
-                  ...product!,
-                  slug: convertSlugToURLFriendly(e.target.value),
-                })
-              }
-            />
-          </label>
-        </div>
-        {/* Product slug input div - end */}
-        {/* Product inStock select input div - start */}
 
-        <div>
-          <label className="form-control w-full max-w-xs">
-            <div className="label">
-              <span className="label-text">Is product in stock?</span>
+            <div>
+              <label className="form-control w-full">
+                <div className="label">
+                  <span className="label-text text-gray-400">Rating (0-5):</span>
+                </div>
+                <input
+                  type="number"
+                  min={0}
+                  max={5}
+                  step={1}
+                  className="input input-bordered bg-gray-800 border-gray-700 text-white w-full"
+                  value={product?.rating ?? 0}
+                  onChange={(e) =>
+                    setProduct({ ...product!, rating: Number(e.target.value) })
+                  }
+                />
+              </label>
             </div>
-            <select
-              className="select select-bordered"
-              value={product?.inStock ?? 1}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="form-control w-full">
+                <div className="label">
+                  <span className="label-text text-gray-400">Discount (%):</span>
+                </div>
+                <input
+                  type="number"
+                  min={0}
+                  max={90}
+                  step={1}
+                  className="input input-bordered bg-gray-800 border-gray-700 text-white w-full"
+                  value={product?.discount ?? 0}
+                  onChange={(e) =>
+                    setProduct({ ...product!, discount: Number(e.target.value) })
+                  }
+                />
+              </label>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 py-4">
+              <label className="label cursor-pointer flex-col items-start gap-2 border border-gray-800 rounded-lg p-3 bg-gray-800/30">
+                <span className="label-text text-gray-400 text-xs uppercase font-bold">Offer Item</span>
+                <input
+                  type="checkbox"
+                  className="checkbox checkbox-error"
+                  checked={product?.isOfferItem ?? false}
+                  onChange={(e) =>
+                    setProduct({ ...product!, isOfferItem: e.target.checked })
+                  }
+                />
+              </label>
+              <label className="label cursor-pointer flex-col items-start gap-2 border border-gray-800 rounded-lg p-3 bg-gray-800/30">
+                <span className="label-text text-gray-400 text-xs uppercase font-bold">Featured</span>
+                <input
+                  type="checkbox"
+                  className="checkbox checkbox-error"
+                  checked={product?.isFeatured ?? false}
+                  onChange={(e) =>
+                    setProduct({ ...product!, isFeatured: e.target.checked })
+                  }
+                />
+              </label>
+              <label className="label cursor-pointer flex-col items-start gap-2 border border-gray-800 rounded-lg p-3 bg-gray-800/30">
+                <span className="label-text text-gray-400 text-xs uppercase font-bold">Hot Deal</span>
+                <input
+                  type="checkbox"
+                  className="checkbox checkbox-error"
+                  checked={product?.isHotDeal ?? false}
+                  onChange={(e) =>
+                    setProduct({ ...product!, isHotDeal: e.target.checked })
+                  }
+                />
+              </label>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="form-control w-full">
+                <div className="label">
+                  <span className="label-text text-gray-400">Manufacturer:</span>
+                </div>
+                <input
+                  type="text"
+                  className="input input-bordered bg-gray-800 border-gray-700 text-white w-full"
+                  value={product?.manufacturer || ""}
+                  onChange={(e) =>
+                    setProduct({ ...product!, manufacturer: e.target.value })
+                  }
+                />
+              </label>
+            </div>
+            <div>
+              <label className="form-control w-full">
+                <div className="label">
+                  <span className="label-text text-gray-400">Slug:</span>
+                </div>
+                <input
+                  type="text"
+                  className="input input-bordered bg-gray-800 border-gray-700 text-white w-full"
+                  value={
+                    product?.slug ? convertSlugToURLFriendly(product?.slug) : ""
+                  }
+                  onChange={(e) =>
+                    setProduct({
+                      ...product!,
+                      slug: convertSlugToURLFriendly(e.target.value),
+                    })
+                  }
+                />
+              </label>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="form-control w-full">
+                <div className="label">
+                  <span className="label-text text-gray-400">In Stock:</span>
+                </div>
+                <select
+                  className="select select-bordered bg-gray-800 border-gray-700 text-white w-full"
+                  value={product?.inStock ?? 1}
+                  onChange={(e) => {
+                    setProduct({ ...product!, inStock: Number(e.target.value) });
+                  }}
+                >
+                  <option value={1}>Yes</option>
+                  <option value={0}>No</option>
+                </select>
+              </label>
+            </div>
+            <div>
+              <label className="form-control w-full">
+                <div className="label">
+                  <span className="label-text text-gray-400">Availability:</span>
+                </div>
+                <select
+                  className="select select-bordered bg-gray-800 border-gray-700 text-white w-full"
+                  value={product?.availabilityStatus || "AVAILABLE"}
+                  onChange={(e) => {
+                    setProduct((prev) =>
+                      prev ? { ...prev, availabilityStatus: e.target.value as 'AVAILABLE' | 'UNDER_MAINTENANCE' | 'UNAVAILABLE' } : prev
+                    );
+                  }}
+                >
+                  <option value="AVAILABLE">Available</option>
+                  <option value="UNDER_MAINTENANCE">Under Maintenance</option>
+                  <option value="UNAVAILABLE">Unavailable</option>
+                </select>
+              </label>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="form-control w-full">
+                <div className="label">
+                  <span className="label-text text-gray-400">Category:</span>
+                </div>
+                <select
+                  className="select select-bordered bg-gray-800 border-gray-700 text-white w-full"
+                  value={product?.categoryId || ""}
+                  onChange={(e) =>
+                    setProduct({
+                      ...product!,
+                      categoryId: e.target.value,
+                    })
+                  }
+                >
+                  {categories &&
+                    categories.map((category: Category) => (
+                      <option key={category?.id} value={category?.id}>
+                        {formatCategoryName(category?.name)}
+                      </option>
+                    ))}
+                </select>
+              </label>
+            </div>
+            <div>
+              <label className="form-control w-full">
+                <div className="label">
+                  <span className="label-text text-gray-400">Brand:</span>
+                </div>
+                <select
+                  className="select select-bordered bg-gray-800 border-gray-700 text-white w-full"
+                  value={product?.brandId || ""}
+                  onChange={(e) =>
+                    setProduct({
+                      ...product!,
+                      brandId: e.target.value,
+                    })
+                  }
+                >
+                  {brands &&
+                    brands.map((brand) => (
+                      <option key={brand.id} value={brand.id}>
+                        {brand.name}
+                      </option>
+                    ))}
+                </select>
+              </label>
+            </div>
+          </div>
+
+          {/* Images */}
+          <div>
+            <label className="label"><span className="label-text text-gray-400">Main Image</span></label>
+            <input
+              type="file"
+              className="file-input file-input-bordered bg-gray-800 border-gray-700 w-full max-w-sm"
               onChange={(e) => {
-                setProduct({ ...product!, inStock: Number(e.target.value) });
-              }}
-            >
-              <option value={1}>Yes</option>
-              <option value={0}>No</option>
-            </select>
-          </label>
-        </div>
-        {/* Product inStock select input div - end */}
-        <div>
-          <label className="form-control w-full max-w-xs">
-            <div className="label">
-              <span className="label-text">Availability status</span>
-            </div>
-            <select
-              className="select select-bordered"
-              value={product?.availabilityStatus || "AVAILABLE"}
-              onChange={(e) => {
-                setProduct((prev) =>
-                  prev ? { ...prev, availabilityStatus: e.target.value as 'AVAILABLE' | 'UNDER_MAINTENANCE' | 'UNAVAILABLE' } : prev
-                );
-              }}
-            >
-              <option value="AVAILABLE">Available</option>
-              <option value="UNDER_MAINTENANCE">Under maintenance</option>
-              <option value="UNAVAILABLE">Unavailable</option>
-            </select>
-          </label>
-        </div>
-        {/* Product category select input div - start */}
-        <div>
-          <label className="form-control w-full max-w-xs">
-            <div className="label">
-              <span className="label-text">Category:</span>
-            </div>
-            <select
-              className="select select-bordered"
-              value={product?.categoryId || ""}
-              onChange={(e) =>
-                setProduct({
-                  ...product!,
-                  categoryId: e.target.value,
-                })
-              }
-            >
-              {categories &&
-                categories.map((category: Category) => (
-                  <option key={category?.id} value={category?.id}>
-                    {formatCategoryName(category?.name)}
-                  </option>
-                ))}
-            </select>
-          </label>
-        </div>
-        <div>
-          <label className="form-control w-full max-w-xs">
-            <div className="label">
-              <span className="label-text">Brand:</span>
-            </div>
-            <select
-              className="select select-bordered"
-              value={product?.brandId || ""}
-              onChange={(e) =>
-                setProduct({
-                  ...product!,
-                  brandId: e.target.value,
-                })
-              }
-            >
-              {brands &&
-                brands.map((brand) => (
-                  <option key={brand.id} value={brand.id}>
-                    {brand.name}
-                  </option>
-                ))}
-            </select>
-          </label>
-        </div>
-        {/* Product category select input div - end */}
+                const input = e.target as HTMLInputElement;
+                const selectedFile = input.files?.[0];
 
-        {/* Main image file upload div - start */}
-        <div>
-          <input
-            type="file"
-            className="file-input file-input-bordered file-input-lg w-full max-w-sm"
-            onChange={(e) => {
-              const input = e.target as HTMLInputElement;
-              const selectedFile = input.files?.[0];
-
-              if (selectedFile) {
-                uploadFile(selectedFile);
-                setProduct({ ...product!, mainImage: selectedFile.name });
-              }
-            }}
-          />
-          {product?.mainImage && (
-            <Image
-              src={`/` + product?.mainImage}
-              alt={product?.title}
-              className="w-auto h-auto mt-2"
-              width={100}
-              height={100}
+                if (selectedFile) {
+                  uploadFile(selectedFile);
+                  setProduct({ ...product!, mainImage: selectedFile.name });
+                }
+              }}
             />
-          )}
-        </div>
-        {/* Main image file upload div - end */}
-        {/* Other images file upload div - start */}
-        <div className="mt-4">
-          <label className="form-control w-full max-w-sm">
-            <span className="label-text">Upload additional images</span>
+            {product?.mainImage && (
+              <div className="mt-4 border border-gray-700 rounded-lg p-2 w-fit bg-gray-800">
+                <Image
+                  src={
+                    product.mainImage.startsWith("data:") || product.mainImage.startsWith("http")
+                      ? product.mainImage
+                      : `/${product.mainImage}`
+                  }
+                  alt={product?.title}
+                  className="w-32 h-32 object-contain"
+                  width={128}
+                  height={128}
+                />
+              </div>
+            )}
+          </div>
+
+          <div>
+            <label className="label"><span className="label-text text-gray-400">Additional Images</span></label>
             <input
               type="file"
               multiple
-              className="file-input file-input-bordered w-full"
+              className="file-input file-input-bordered bg-gray-800 border-gray-700 w-full max-w-sm"
               onChange={async (e) => {
                 const files = e.target.files;
                 if (!files || files.length === 0) return;
@@ -446,85 +437,84 @@ const [otherImages, setOtherImages] = useState<ImageItem[]>([]);
                 }
               }}
             />
-          </label>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {otherImages && otherImages.map((image) => (
-              <div key={image.imageID} className="border rounded p-2 flex flex-col items-center gap-2">
-                <Image src={`/${image.image}`} alt="product image" width={100} height={100} className="w-auto h-auto" />
-                <div className="flex gap-2">
-                  <button className="btn btn-sm" onClick={async ()=>{
-                    const res = await fetch(`${apiClient.baseUrl}/api/product-images/main/${image.imageID}`, { method: 'PUT' });
-                    if (res.ok) { toast.success('Set as main'); fetchProductData(); } else { toast.error('Failed'); }
-                  }}>Set main</button>
-                  <button className="btn btn-sm btn-outline btn-error" onClick={async ()=>{
-                    const res = await fetch(`${apiClient.baseUrl}/api/product-images/image/${image.imageID}`, { method: 'DELETE' });
-                    if (res.status === 204) { toast.success('Deleted'); fetchProductData(); } else { toast.error('Delete failed'); }
-                  }}>Delete</button>
+            <div className="mt-4 flex flex-wrap gap-4">
+              {otherImages && otherImages.map((image) => (
+                <div key={image.imageID} className="bg-gray-800 border border-gray-700 rounded-lg p-2 flex flex-col items-center gap-2">
+                  <Image src={`/${image.image}`} alt="product image" width={100} height={100} className="w-24 h-24 object-cover rounded" />
+                  <div className="flex gap-2">
+                    <button className="btn btn-xs btn-ghost text-gray-400 hover:text-white" onClick={async () => {
+                      const res = await fetch(`${apiClient.baseUrl}/api/product-images/main/${image.imageID}`, { method: 'PUT' });
+                      if (res.ok) { toast.success('Set as main'); fetchProductData(); } else { toast.error('Failed'); }
+                    }}>Main</button>
+                    <button className="btn btn-xs btn-ghost text-red-400 hover:text-red-300" onClick={async () => {
+                      const res = await fetch(`${apiClient.baseUrl}/api/product-images/image/${image.imageID}`, { method: 'DELETE' });
+                      if (res.status === 204) { toast.success('Deleted'); fetchProductData(); } else { toast.error('Delete failed'); }
+                    }}>Delete</button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
+
+          {/* Description */}
+          <div>
+            <label className="form-control">
+              <div className="label">
+                <span className="label-text text-gray-400">Product description:</span>
+              </div>
+              <textarea
+                className="textarea textarea-bordered bg-gray-800 border-gray-700 text-white h-32"
+                value={product?.description || ""}
+                onChange={(e) =>
+                  setProduct({ ...product!, description: e.target.value })
+                }
+              ></textarea>
+            </label>
+          </div>
+
+          <div>
+            <label className="form-control">
+              <div className="label">
+                <span className="label-text text-gray-400">Features (comma separated):</span>
+              </div>
+              <input
+                type="text"
+                className="input input-bordered bg-gray-800 border-gray-700 text-white w-full"
+                value={(product?.features || []).join(", ")}
+                onChange={(e) =>
+                  setProduct({
+                    ...product!,
+                    features: e.target.value
+                      .split(",")
+                      .map((s) => s.trim())
+                      .filter(Boolean),
+                  })
+                }
+              />
+            </label>
+          </div>
+
+          {/* Actions */}
+          <div className="pt-6 border-t border-gray-800 flex gap-4 max-sm:flex-col">
+            <button
+              type="button"
+              onClick={updateProduct}
+              className="flex-1 uppercase bg-blue-600 hover:bg-blue-700 px-6 py-4 text-sm font-bold text-white rounded-xl transition-colors shadow-lg shadow-blue-900/20"
+            >
+              Update Product
+            </button>
+            <button
+              type="button"
+              className="flex-1 uppercase bg-red-600 hover:bg-red-700 px-6 py-4 text-sm font-bold text-white rounded-xl transition-colors shadow-lg shadow-red-900/20"
+              onClick={deleteProduct}
+            >
+              Delete Product
+            </button>
+          </div>
+          <p className="text-sm text-red-400/70 text-center">
+            Note: Deleting a product requires deleting all associated order records first.
+          </p>
         </div>
-        {/* Other images file upload div - end */}
-        {/* Product description div - start */}
-        <div>
-          <label className="form-control">
-            <div className="label">
-              <span className="label-text">Product description:</span>
-            </div>
-            <textarea
-              className="textarea textarea-bordered h-24"
-              value={product?.description || ""}
-              onChange={(e) =>
-                setProduct({ ...product!, description: e.target.value })
-              }
-            ></textarea>
-          </label>
-        </div>
-        {/* Product description div - end */}
-        <div>
-          <label className="form-control">
-            <div className="label">
-              <span className="label-text">Features (comma separated)</span>
-            </div>
-            <input
-              type="text"
-              className="input input-bordered w-full"
-              value={(product?.features || []).join(", ")}
-              onChange={(e) =>
-                setProduct({
-                  ...product!,
-                  features: e.target.value
-                    .split(",")
-                    .map((s) => s.trim())
-                    .filter(Boolean),
-                })
-              }
-            />
-          </label>
-        </div>
-        {/* Action buttons div - start */}
-        <div className="flex gap-x-2 max-sm:flex-col">
-          <button
-            type="button"
-            onClick={updateProduct}
-            className="uppercase bg-blue-500 px-10 py-5 text-lg border border-gray-300 font-bold text-white shadow-sm hover:bg-blue-600 hover:text-white focus:outline-none focus:ring-2"
-          >
-            Update product
-          </button>
-          <button
-            type="button"
-            className="uppercase bg-red-600 px-10 py-5 text-lg border border-gray-300 font-bold text-white shadow-sm hover:bg-red-700 hover:text-white focus:outline-none focus:ring-2"
-            onClick={deleteProduct}
-          >
-            Delete product
-          </button>
-        </div>
-        {/* Action buttons div - end */}
-        <p className="text-xl max-sm:text-lg text-error">
-          To delete the product you first need to delete all its records in
-          orders (customer_order_product table).
-        </p>
       </div>
     </div>
   );

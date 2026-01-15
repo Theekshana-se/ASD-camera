@@ -18,57 +18,54 @@ type Banner = {
   active: boolean;
 };
 
+// Helper: Convert file to Base64
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function PromotionsAdminPage() {
   const [items, setItems] = useState<Banner[]>([]);
   const [form, setForm] = useState<Partial<Banner>>({ active: true, order: 0, position: "promotion" });
   const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
+  // Removed uploading state as we process client-side
 
   const load = async () => {
     setLoading(true);
-    const res = await apiClient.get("/api/banners");
+    // Removed Pragma header to fix CORS. Timestamp ?t= is sufficient for cache busting.
+    const res = await apiClient.get(`/api/banners?t=${Date.now()}`, { cache: "no-store" });
     const data = await res.json();
     setItems(Array.isArray(data) ? data : []);
     setLoading(false);
   };
-  
+
   useEffect(() => { load(); }, []);
 
   const onFileChange = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
-    setUploading(true);
+
     try {
-      const formData = new FormData();
-      formData.append("file", files[0]);
-      // Use the dedicated banners upload endpoint
-      const res = await fetch(`${apiClient.baseUrl}/api/banners/upload`, { method: "POST", body: formData });
-      const data = await res.json();
-      
-      if (res.ok) {
-        // Handle both singular url (legacy/slider) and plural urls (banners) formats
-        const uploadedUrl = data.url || (data.urls && data.urls[0]);
-        if (uploadedUrl) {
-          setForm({ ...form, imageUrl: uploadedUrl });
-          toast.success("Image uploaded");
-        } else {
-          toast.error("Invalid response from server");
-        }
-      } else {
-        toast.error(String(data?.error || "Upload failed"));
-      }
+      const file = files[0];
+      // Convert to Base64 locally matching Popups behavior
+      const base64 = await fileToBase64(file);
+      setForm({ ...form, imageUrl: base64 });
+      toast.success("Image ready");
     } catch {
-      toast.error("Upload failed");
+      toast.error("Failed to process image");
     }
-    setUploading(false);
   };
 
   const create = async () => {
     if (!form.imageUrl) { toast.error("Image required"); return; }
     const res = await apiClient.post("/api/banners", form);
-    if (res.status === 201) { 
-      toast.success("Promotion created"); 
-      setForm({ active: true, order: 0, position: "promotion" }); 
-      load(); 
+    if (res.status === 201) {
+      toast.success("Promotion created");
+      setForm({ active: true, order: 0, position: "promotion" });
+      load();
     } else {
       toast.error("Failed to create");
     }
@@ -76,24 +73,24 @@ export default function PromotionsAdminPage() {
 
   const update = async (id: string, patch: Partial<Banner>) => {
     const res = await apiClient.put(`/api/banners/${id}`, patch);
-    if (res.ok) { 
+    if (res.ok) {
       toast.success("Updated");
-      load(); 
+      load();
     }
   };
-  
+
   const remove = async (id: string) => {
     const res = await apiClient.delete(`/api/banners/${id}`);
-    if (res.status === 204) { 
-      toast.success("Deleted"); 
-      load(); 
+    if (res.status === 204) {
+      toast.success("Deleted");
+      load();
     }
   };
 
   return (
     <div className="flex min-h-screen bg-gray-950">
       <DashboardSidebar />
-      
+
       <div className="flex-1 flex flex-col">
         <AdminHeader />
         <main className="flex-1 p-8 overflow-auto">
@@ -105,7 +102,7 @@ export default function PromotionsAdminPage() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-white">Promotions Control</h1>
-                <p className="text-gray-400 text-sm">{items.length} active promotions</p>
+                <p className="text-gray-400 text-sm">{items.filter(i => i.active).length} active promotions</p>
               </div>
             </div>
           </div>
@@ -123,7 +120,7 @@ export default function PromotionsAdminPage() {
                 </div>
                 <h2 className="text-lg font-semibold text-white">Add New Promotion</h2>
               </div>
-              
+
               <div className="p-6 space-y-4">
                 {/* Image Upload */}
                 <div className="space-y-2">
@@ -131,17 +128,16 @@ export default function PromotionsAdminPage() {
                   <label className="flex flex-col items-center gap-3 px-4 py-8 bg-gray-800/50 border-2 border-dashed border-gray-700 rounded-xl cursor-pointer hover:border-orange-500/50 transition-colors">
                     <FaUpload className="text-gray-500 text-3xl" />
                     <span className="text-sm text-gray-400">
-                      {uploading ? "Uploading..." : "Click to upload image"}
+                      Click to upload image
                     </span>
-                    <input 
-                      type="file" 
-                      accept="image/*" 
-                      onChange={(e) => onFileChange(e.target.files)} 
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => onFileChange(e.target.files)}
                       className="hidden"
-                      disabled={uploading}
                     />
                   </label>
-                  
+
                   {/* Image URL fallback/edit */}
                   <div className="relative mt-2">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
@@ -162,14 +158,14 @@ export default function PromotionsAdminPage() {
                         <span>Image ready</span>
                       </div>
                       <div className="relative w-full h-32 rounded-lg overflow-hidden bg-gray-800">
-                      <Image 
-                        src={getImageUrl(form.imageUrl)} 
-                        alt="Preview" 
-                        fill 
-                        className="object-cover"
-                        onError={() => toast.error("Invalid image URL")}
-                      />
-                    </div>
+                        <Image
+                          src={getImageUrl(form.imageUrl)}
+                          alt="Preview"
+                          fill
+                          className="object-cover"
+                          onError={() => console.log("Image load failed")}
+                        />
+                      </div>
                     </div>
                   )}
                 </div>
@@ -224,9 +220,8 @@ export default function PromotionsAdminPage() {
                   <span className="text-sm font-medium text-gray-300">Active Status</span>
                   <button
                     onClick={() => setForm({ ...form, active: !form.active })}
-                    className={`relative w-12 h-6 rounded-full transition-colors ${
-                      form.active ? "bg-orange-500" : "bg-gray-700"
-                    }`}
+                    className={`relative w-12 h-6 rounded-full transition-colors ${form.active ? "bg-orange-500" : "bg-gray-700"
+                      }`}
                   >
                     <motion.div
                       animate={{ x: form.active ? 24 : 2 }}
@@ -262,7 +257,7 @@ export default function PromotionsAdminPage() {
                 </div>
                 <h2 className="text-lg font-semibold text-white">Active Promotions</h2>
               </div>
-              
+
               <div className="p-6">
                 {loading ? (
                   <div className="space-y-3">
@@ -292,10 +287,10 @@ export default function PromotionsAdminPage() {
                         >
                           <div className="flex items-start gap-4">
                             <div className="relative w-32 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-gray-800">
-                              <Image 
-                                src={item.imageUrl} 
-                                alt={item.title || "Promotion"} 
-                                fill 
+                              <Image
+                                src={getImageUrl(item.imageUrl)}
+                                alt={item.title || "Promotion"}
+                                fill
                                 className="object-cover"
                               />
                             </div>
@@ -315,11 +310,10 @@ export default function PromotionsAdminPage() {
                                   <span className="truncate">{item.href}</span>
                                 </div>
                               )}
-                              <span className={`inline-block mt-2 text-xs px-2 py-0.5 rounded-full ${
-                                item.active 
-                                  ? "bg-green-500/10 text-green-400" 
-                                  : "bg-gray-500/10 text-gray-400"
-                              }`}>
+                              <span className={`inline-block mt-2 text-xs px-2 py-0.5 rounded-full ${item.active
+                                ? "bg-green-500/10 text-green-400"
+                                : "bg-gray-500/10 text-gray-400"
+                                }`}>
                                 {item.active ? "Active" : "Inactive"}
                               </span>
                             </div>
