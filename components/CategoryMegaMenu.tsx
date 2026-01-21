@@ -15,8 +15,8 @@ const formatCategoryName = (name: string): string => {
     .join(" ");
 };
 
-const CategoryMegaMenu: React.FC = () => {
-  const [categories, setCategories] = useState<Cat[]>([]);
+const CategoryMegaMenu: React.FC<{ categories?: any[] }> = ({ categories }) => {
+  const [localCategories, setLocalCategories] = useState<Cat[]>([]);
   const [active, setActive] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [open, setOpen] = useState(false);
@@ -26,23 +26,19 @@ const CategoryMegaMenu: React.FC = () => {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [startIdx, setStartIdx] = useState(0);
 
-  const navCats = useMemo(() => (
-    [
-      { id: "smart-phones", name: "smart-phones", href: "/shop/smart-phones" },
-      { id: "cameras", name: "cameras", href: "/shop/cameras" },
-      { id: "earbuds", name: "earbuds", href: "/shop/earbuds" },
-      { id: "speakers", name: "speakers", href: "/shop/speakers" },
-      { id: "juicers", name: "juicers", href: "/shop/juicers" },
-      { id: "headphones", name: "headphones", href: "/shop/headphones" },
-      { id: "watches", name: "watches", href: "/shop/watches" },
-      { id: "laptops", name: "laptops", href: "/shop/laptops" },
-      { id: "tea", name: "tea", href: "/shop/tea" },
-      { id: "lighters", name: "lighters", href: "/shop/lighters" },
-    ]
-  ), []);
+  const navCats = useMemo(() => {
+    if (categories && categories.length > 0) {
+      return categories.map((c) => ({
+        id: c.id,
+        name: c.name,
+        href: `/shop/${c.slug || c.name.toLowerCase().replace(/ /g, '-')}`
+      }));
+    }
+    return [];
+  }, [categories]);
 
   useEffect(() => {
-    setCategories(navCats.map((c) => ({ id: c.id, name: c.name })));
+    setLocalCategories(navCats);
     setActive(navCats[0]?.name || null);
   }, [navCats]);
 
@@ -72,7 +68,7 @@ const CategoryMegaMenu: React.FC = () => {
     if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
     hoverTimeout.current = setTimeout(() => setOpen(true), 150);
   };
-  
+
   const handleLeave = () => {
     if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
     hoverTimeout.current = setTimeout(() => setOpen(false), 200);
@@ -83,21 +79,21 @@ const CategoryMegaMenu: React.FC = () => {
   const scrollRight = () => setStartIdx((s) => Math.min(maxStart, s + 1));
 
   const bar = useMemo(() => (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       className="relative bg-gradient-to-r from-white/95 via-white/98 to-white/95 backdrop-blur-md border-b border-gray-200/80 shadow-sm py-3"
     >
       {/* Subtle gradient accent line */}
       <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#FF1F1F]/30 to-transparent" />
-      
+
       {/* Left scroll button */}
       <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10">
-        <motion.button 
+        <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
-          aria-label="Scroll left" 
-          onClick={scrollLeft} 
+          aria-label="Scroll left"
+          onClick={scrollLeft}
           className="w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm border border-gray-200/80 text-[#1A1F2E] text-lg font-bold shadow-md hover:shadow-lg hover:border-[#FF1F1F]/30 transition-all duration-300 flex items-center justify-center"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -108,11 +104,11 @@ const CategoryMegaMenu: React.FC = () => {
 
       {/* Right scroll button */}
       <div className="absolute right-4 top-1/2 -translate-y-1/2 z-10">
-        <motion.button 
+        <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
-          aria-label="Scroll right" 
-          onClick={scrollRight} 
+          aria-label="Scroll right"
+          onClick={scrollRight}
           className="w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm border border-gray-200/80 text-[#1A1F2E] text-lg font-bold shadow-md hover:shadow-lg hover:border-[#FF1F1F]/30 transition-all duration-300 flex items-center justify-center"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -140,19 +136,19 @@ const CategoryMegaMenu: React.FC = () => {
                 className={`
                   relative inline-flex items-center rounded-full px-6 py-2.5 font-semibold text-sm tracking-wide
                   overflow-hidden transition-all duration-300
-                  ${isActive 
-                    ? "bg-gradient-to-r from-[#FF1F1F] to-[#1A1F2E] text-white shadow-lg shadow-red-500/30" 
+                  ${isActive
+                    ? "bg-gradient-to-r from-[#FF1F1F] to-[#1A1F2E] text-white shadow-lg shadow-red-500/30"
                     : "bg-white/80 backdrop-blur-sm text-[#1A1F2E] border border-gray-200/80 shadow-sm hover:shadow-md hover:border-[#FF1F1F]/40"
                   }
                 `}
               >
                 {/* Animated gradient background for inactive pills on hover */}
                 {!isActive && (
-                  <motion.div 
+                  <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-[#FF1F1F]/10 to-[#1A1F2E]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                   />
                 )}
-                
+
                 {/* Glow effect for active pill */}
                 {isActive && (
                   <motion.div
@@ -167,7 +163,7 @@ const CategoryMegaMenu: React.FC = () => {
                     }}
                   />
                 )}
-                
+
                 <span className="relative z-10">{formatCategoryName(c.name)}</span>
               </motion.div>
             </Link>
@@ -180,7 +176,7 @@ const CategoryMegaMenu: React.FC = () => {
   return (
     <div className="relative" onMouseLeave={handleLeave}>
       {bar}
-      
+
       {/* Dropdown mega menu */}
       <AnimatePresence>
         {open && (
@@ -232,7 +228,7 @@ const CategoryMegaMenu: React.FC = () => {
                   <p className="text-sm text-gray-600 mt-1">Items in {formatCategoryName(active || "")} are coming soon</p>
                 </div>
               ) : (
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   className="grid grid-cols-6 gap-4 max-xl:grid-cols-5 max-lg:grid-cols-4 max-md:grid-cols-3 max-sm:grid-cols-2"
