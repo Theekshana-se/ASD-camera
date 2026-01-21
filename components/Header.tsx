@@ -36,8 +36,10 @@ type Settings = {
 
 const Header = ({
   settings,
+  categories,
 }: {
   settings?: { logoUrl?: string; contactPhone?: string; contactEmail?: string; noticeBarText?: string; noticeBarEnabled?: boolean; noticeBarAnimationEnabled?: boolean };
+  categories?: any[];
 }) => {
   const { data: session } = useSession();
   const pathname = usePathname();
@@ -277,7 +279,7 @@ const Header = ({
       </header>
       {pathname.startsWith("/admin") === false && (
         <div>
-          <CategoryMegaMenu />
+          <CategoryMegaMenu categories={categories} />
         </div>
       )}
     </>

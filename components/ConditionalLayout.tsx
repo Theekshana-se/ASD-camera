@@ -7,9 +7,10 @@ import WhatsAppButton from "@/components/WhatsAppButton";
 type ConditionalLayoutProps = {
   children: React.ReactNode;
   settings: any;
+  categories?: any[];
 };
 
-export default function ConditionalLayout({ children, settings }: ConditionalLayoutProps) {
+export default function ConditionalLayout({ children, settings, categories }: ConditionalLayoutProps) {
   const pathname = usePathname();
   const isAdminRoute = pathname?.startsWith("/admin");
 
@@ -21,7 +22,7 @@ export default function ConditionalLayout({ children, settings }: ConditionalLay
   // For public routes, show header/footer
   return (
     <>
-      <Header settings={settings} />
+      <Header settings={settings} categories={categories} />
       {children}
       <Footer settings={settings} />
       {settings?.whatsappEnabled && settings?.whatsappNumber && (

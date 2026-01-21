@@ -60,50 +60,14 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="group relative w-full"
+      className="group relative w-full aspect-square"
     >
-      <Link href={`/product/${product.slug || product.id}`} className="block">
-        {/* Card Container */}
-        <div className="relative bg-white border border-[#E5E7EB] hover:border-[#FF1F1F] rounded-lg overflow-hidden transition-all duration-500 shadow-sm hover:shadow-md">
-          {/* Badges */}
-          <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
-            {isNew && (
-              <motion.div
-                initial={{ scale: 0, rotate: -12 }}
-                animate={{ scale: 1, rotate: 0 }}
-                transition={{ delay: 0.2, type: "spring", bounce: 0.5 }}
-                className="px-3 py-1 bg-[#FF1F1F] text-white text-xs font-bold uppercase tracking-wider rounded"
-              >
-                New
-              </motion.div>
-            )}
-            {discount > 0 && (
-              <motion.div
-                initial={{ scale: 0, rotate: 12 }}
-                animate={{ scale: 1, rotate: 0 }}
-                transition={{ delay: 0.3, type: "spring", bounce: 0.5 }}
-                className="px-3 py-1 bg-gradient-to-r from-red-600 to-black text-white text-xs font-bold uppercase tracking-wider rounded"
-              >
-                -{discount}%
-              </motion.div>
-            )}
-          </div>
+      <Link href={`/product/${product.slug || product.id}`} className="block w-full h-full">
+        {/* Card Container - Now 1:1 Square */}
+        <div className="relative w-full h-full bg-white border border-[#E5E7EB] hover:border-[#FF1F1F] rounded-lg overflow-hidden transition-all duration-500 shadow-sm hover:shadow-md">
 
-          {/* Wishlist Button */}
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            className="absolute top-3 right-3 z-10 w-9 h-9 bg-white/90 backdrop-blur-sm border border-[#E5E7EB] rounded-full flex items-center justify-center text-[#1A1F2E] hover:bg-[#FF1F1F] hover:text-white hover:border-[#FF1F1F] transition-all duration-300"
-            onClick={(e) => {
-              e.preventDefault();
-              // Add to wishlist logic
-            }}
-          >
-            <FiHeart className="w-4 h-4" />
-          </motion.button>
-
-          {/* Product Image */}
-          <div className="relative h-64 bg-[#F8F9FA] flex items-center justify-center overflow-hidden">
+          {/* Background Image - Fills the square but respects overlay */}
+          <div className="absolute inset-x-0 top-0 bottom-0 bg-[#F8F9FA] pt-8 px-8 pb-24 z-0">
             <motion.div
               animate={{
                 scale: isHovered ? 1.05 : 1,
@@ -115,105 +79,110 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
                 src={productImage}
                 alt={productName}
                 fill
-                className="object-contain p-4"
+                className="object-contain"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
             </motion.div>
-
-            {/* Quick Add Button - Slides in from right */}
-            <SmartButton
-              initial={{ x: 100, opacity: 0 }}
-              animate={{
-                x: isHovered ? 0 : 100,
-                opacity: isHovered ? 1 : 0,
-              }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-              className="absolute bottom-4 right-4 w-12 h-12 bg-[#FF1F1F] text-white rounded-full flex items-center justify-center shadow-lg shadow-red-500/50 hover:scale-110 transition-transform duration-200 !p-0"
-              onClick={handleQuickAdd}
-            >
-              <FiShoppingCart className="w-5 h-5" />
-            </SmartButton>
           </div>
 
-          {/* Product Info */}
-          <div className="p-5 space-y-3">
-            {/* Brand */}
-            {product.brand && (
-              <div className="text-xs text-[#6B7280] uppercase tracking-widest font-semibold">
-                {product.brand}
-              </div>
+          {/* Badges - Floating on top */}
+          <div className="absolute top-3 left-3 z-20 flex flex-col gap-2 pointer-events-none">
+            {isNew && (
+              <motion.div
+                initial={{ scale: 0, rotate: -12 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ delay: 0.2, type: "spring", bounce: 0.5 }}
+                className="px-3 py-1 bg-[#FF1F1F] text-white text-xs font-bold uppercase tracking-wider rounded shadow-sm"
+              >
+                New
+              </motion.div>
             )}
-
-            {/* Product Name */}
-            <h3 className="text-[#1A1F2E] font-bold text-base leading-tight line-clamp-2 min-h-[2.5rem] group-hover:text-[#FF1F1F] transition-colors duration-300">
-              {productName}
-            </h3>
-
-            {/* Rating */}
-            {product.rating && (
-              <div className="flex items-center gap-2">
-                <div className="flex">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <svg
-                      key={i}
-                      className={`w-4 h-4 ${
-                        i < Math.floor(product.rating || 0)
-                          ? "text-[#FF1F1F]"
-                          : "text-[#D1D5DB]"
-                      }`}
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  ))}
-                </div>
-                <span className="text-xs text-[#6B7280]">
-                  ({product.reviewCount || 0})
-                </span>
-              </div>
+            {discount > 0 && (
+              <motion.div
+                initial={{ scale: 0, rotate: 12 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ delay: 0.3, type: "spring", bounce: 0.5 }}
+                className="px-3 py-1 bg-gradient-to-r from-red-600 to-black text-white text-xs font-bold uppercase tracking-wider rounded shadow-sm"
+              >
+                -{discount}%
+              </motion.div>
             )}
+          </div>
 
-            {/* Price */}
-            <div className="flex items-baseline gap-3 pt-2 border-t border-[#E5E7EB]">
-              <div className="text-2xl font-bold text-[#FF1F1F] font-mono">
-                Rs.{finalPrice.toLocaleString()}
-              </div>
-              {discount > 0 && (
-                <div className="text-sm text-[#9CA3AF] line-through font-mono">
-                  Rs.{price.toLocaleString()}
+          {/* Wishlist Button - Floating on top */}
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            className="absolute top-3 right-3 z-20 w-9 h-9 bg-white/90 backdrop-blur-sm border border-[#E5E7EB] rounded-full flex items-center justify-center text-[#1A1F2E] hover:bg-[#FF1F1F] hover:text-white hover:border-[#FF1F1F] transition-all duration-300 shadow-sm"
+            onClick={(e) => {
+              e.preventDefault();
+              // Add to wishlist logic
+            }}
+          >
+            <FiHeart className="w-4 h-4" />
+          </motion.button>
+
+          {/* Product Info - Overlay at bottom */}
+          <div className="absolute bottom-0 left-0 right-0 z-10 bg-white/95 backdrop-blur-md border-t border-gray-100 p-4 transform translate-y-0 transition-all duration-300">
+            <div className="space-y-1">
+              {/* Brand */}
+              {product.brand && (
+                <div className="text-[10px] text-[#6B7280] uppercase tracking-widest font-semibold truncate">
+                  {product.brand}
                 </div>
               )}
+
+              {/* Product Name */}
+              <h3 className="text-[#1A1F2E] font-bold text-sm leading-tight truncate group-hover:text-[#FF1F1F] transition-colors duration-300">
+                {productName}
+              </h3>
+
+              {/* Price & Stock Row */}
+              <div className="flex items-center justify-between pt-1">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-lg font-bold text-[#FF1F1F] font-mono">
+                    Rs.{finalPrice.toLocaleString()}
+                  </span>
+                  {discount > 0 && (
+                    <span className="text-xs text-[#9CA3AF] line-through font-mono hidden sm:inline">
+                      Rs.{price.toLocaleString()}
+                    </span>
+                  )}
+                </div>
+
+                {/* Stock Dot */}
+                <div className="flex items-center gap-1.5" title={productStock > 0 ? "In Stock" : "Out of Stock"}>
+                  <div className={`w-2 h-2 rounded-full ${productStock > 0 ? "bg-green-500" : "bg-red-500"}`} />
+                </div>
+              </div>
             </div>
 
-            {/* Rental Period */}
-            {product.rentalPeriod && (
-              <div className="text-xs text-[#6B7280]">
-                per {product.rentalPeriod}
-              </div>
-            )}
-
-            {/* Stock Status */}
-            <div className="flex items-center gap-2">
-              <div
-                className={`w-2 h-2 rounded-full ${
-                  productStock > 0 ? "bg-green-500" : "bg-red-500"
-                }`}
-              />
-              <span className="text-xs text-[#6B7280]">
-                {productStock > 0 ? `${productStock} in stock` : "Out of stock"}
-              </span>
+            {/* Quick Add Button - Floating over info on right */}
+            <div className="absolute -top-6 right-4">
+              <SmartButton
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{
+                  scale: isHovered ? 1 : 0,
+                  opacity: isHovered ? 1 : 0,
+                }}
+                transition={{ duration: 0.2 }}
+                className="w-10 h-10 bg-[#FF1F1F] text-white rounded-full flex items-center justify-center shadow-lg shadow-red-500/40 hover:scale-110 transition-transform duration-200 !p-0"
+                onClick={handleQuickAdd}
+              >
+                <FiShoppingCart className="w-4 h-4" />
+              </SmartButton>
             </div>
           </div>
 
-          {/* Hover Glow Effect */}
+          {/* Hover Overlay Gradient */}
           <motion.div
-            className="absolute inset-0 pointer-events-none"
+            className="absolute inset-0 z-0 pointer-events-none"
             animate={{
               opacity: isHovered ? 1 : 0,
             }}
             transition={{ duration: 0.3 }}
           >
-            <div className="absolute inset-0 bg-gradient-to-t from-red-500/10 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent" />
           </motion.div>
         </div>
       </Link>

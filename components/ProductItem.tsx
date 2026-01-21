@@ -30,8 +30,8 @@ const ProductItem = ({
             src={
               product.mainImage
                 ? (product.mainImage.startsWith("data:") || product.mainImage.startsWith("http")
-                    ? product.mainImage
-                    : `/${product.mainImage}`)
+                  ? product.mainImage
+                  : `/${product.mainImage}`)
                 : "/product_placeholder.jpg"
             }
             width={320}
